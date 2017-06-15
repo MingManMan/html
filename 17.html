@@ -32,8 +32,9 @@
     }
     .node-first-children{
     position:relative;
-    margin-left: 5px;
-    padding-left: 15px;
+    left:0px;
+    margin-left: 0px;
+    padding-left: 0px;
     padding-bottom: 4px;
     }
     .node-children{
@@ -101,13 +102,15 @@
         </div>
     </div>
 
-    <div  class='node-children' v-if="node.children.length>0">
+    <div  class='node-first-children' v-if="node.children.length>0&&node.isRoot==true">
         <tree-node v-for="node in node.children" :node.sync="node"></tree-node>
     </div>
+    <div v-else-if="node.children.length>0" class='node-children'>
+        <tree-node v-for="node in node.children" :node.sync="node"></tree-node>
+    </div>
+
+
 </div>
-
-
-
 </template>
 <script src="https://cdn.bootcss.com/vue/2.2.2/vue.min.js"></script>
 <script>
@@ -122,7 +125,6 @@ var TreeNode = Vue.extend({
     name: 'tree-node',
     props: ['node'],
     template: '#tree-node-tpl',
-
     methods: {
         handeClick:function(e){
             console.log(this.node)
@@ -235,9 +237,10 @@ var TreeNode = Vue.extend({
 
         addNode: function() {
             
-            console.log(this)
+            console.log("===addNode:enter====",this)
             
-            if(this.node.children.length>0||this.node.isRoot){
+            if(this.node.children.length>0||this.node.isRoot){//是标题元素，或者当前节点有子节点，新增添加当前节点的子节点
+                console.log("=======isRoot======")
                 this.node.children.unshift( {
                     name: '================',
                     children: []
@@ -249,8 +252,17 @@ var TreeNode = Vue.extend({
             }
 
             var index = this.$parent.node.children.indexOf(this.node) + 1
-            if (index >= 0) {
-                console.log("have children")
+            
+            
+                 this.$parent.node.children.splice(index, 0, {  //没有子元素，同级添加
+                    name: '================',
+                    children: []
+                });
+                 this.$nextTick(function() {
+                    this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
+                })
+
+             /*   console.log("have children")
                 this.$parent.node.children.splice(index, 0, {
                     name: '================',
                     children: []
@@ -266,7 +278,7 @@ var TreeNode = Vue.extend({
                 this.$nextTick(function() {
                     this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
                 })
-            }
+            }*/
         },
 
         removeNode: function() {
@@ -407,47 +419,7 @@ var app = new Vue({
         rootNode: {
             name: 'Root',
             isRoot:true,
-            children: [{
-                name: "first",
-                isFirst:true,
-                children: [{
-                    name: 'A',
-                    //isRoot:false,
-                    children: [{
-                        name: 'A1',
-                        //isRoot:false,
-                        children: []
-                    }, {
-                        name: 'A2',
-                        //isRoot:false,
-                        children: []
-                    }]
-                }, {
-                    name: 'B',
-                    //isRoot:false,
-                    children: [{
-                        name: 'B1',
-                        //isRoot:false,
-                        children: []
-                    }, {
-                        name: 'B2',
-                        //isRoot:false,
-                        children: []
-                    }]
-                }, {
-                    name: 'C',
-                    //isRoot:false,
-                    children: [{
-                        name: 'C1',
-                        //isRoot:false,
-                        children: []
-                    }, {
-                        name: 'C2',
-                        //isRoot:false,
-                        children: []
-                    }]
-                }, ]
-            }]
+            children: []
         },
 
         title: 'Vue 无限层级树增删改以及拖拽节点'
