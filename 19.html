@@ -23,6 +23,14 @@
         border: none;
         
     }
+    .myinput_title {
+        BACKGROUND-COLOR: transparent;
+        margin: auto 0;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border: 0
+        
+    }
     .node-first-layer{
     position: relative;
     left:0px;
@@ -44,18 +52,33 @@
     padding-bottom: 4px;
     }
     .kaitou{
-    display:inline;
-    font-size: 5px;
+    display:block;
+    border:1px solid #a1a1a1;
+    width: 5px;
+    height: 5px;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
     }
     .zhongjian{
     display:inline;
     position:relative;
     left:12px;
     font-size: 14px;
+    width:inherit;
+    }
+
+    .node-title{
+    display:block;
+    margin: auto 0;
+    position:relative;
+    left:0px;
+    border-bottom: 1px solid #e5e6e8;
     
     }
+
     .node-content{
-    height:20px;
+    width:inherit;
     min-height: 20px;
     }
     .drag_targ {
@@ -66,10 +89,7 @@
       opacity: 0.9;
       color: red;
     }
-    .title_node{
-        position: absolute;
 
-    }
 
     </style>
 </head>
@@ -95,10 +115,18 @@
     @dragend.prevent.stop="handleDragEnd($event)"
     @dragover.stop.prevent="handleDragOver($event)" 
      >
-    <div class='node-content' >
-        <div class="kaitou fa fa-circle-thin"></div>
+     <div class='node-content' v-if="node.isRoot==true" >
+        
+        <div class="node-title">
+            <input type="text" v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)' >
+        </div>
+    </div>
+
+    <div class='node-content' v-else>
+        <div class="kaitou"></div>
         <div class="zhongjian">
-            <input type="text" v-model="node.name" class='myinput' @keydown.stop='handleKeyDown($event)' >
+            <!-- <input type="text" v-model="node.name" class='myinput' @keydown.stop='handleKeyDown($event)' > -->
+            <div  contenteditable v-model="node.name" class='myinput' @keydown.stop='handleKeyDown($event)' > {{node.name}} </div>
         </div>
     </div>
 

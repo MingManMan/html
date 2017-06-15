@@ -21,6 +21,13 @@
     .myinput {
         BACKGROUND-COLOR: transparent;
         border: none;
+    }
+    .myinput_title {
+        BACKGROUND-COLOR: transparent;
+        margin: auto 0;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border: 0
         
     }
     .node-first-layer{
@@ -52,10 +59,19 @@
     position:relative;
     left:12px;
     font-size: 14px;
+    }
+
+    .node-title{
+    display:block;
+    margin: auto
+    position:relative;
+    left:0px;
+    border-bottom: 1px solid #e5e6e8;
     
     }
+
     .node-content{
-    height:20px;
+    
     min-height: 20px;
     }
     .drag_targ {
@@ -66,10 +82,7 @@
       opacity: 0.9;
       color: red;
     }
-    .title_node{
-        position: absolute;
 
-    }
 
     </style>
 </head>
@@ -95,7 +108,16 @@
     @dragend.prevent.stop="handleDragEnd($event)"
     @dragover.stop.prevent="handleDragOver($event)" 
      >
-    <div class='node-content' >
+
+     <div class='node-content' v-if="node.isRoot==true" >
+        
+        <div class="node-title">
+            <input type="text" v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)' >
+        </div>
+        <div class="kaitou"></div>
+    </div>
+
+    <div class='node-content' v-else>
         <div class="kaitou fa fa-circle-thin"></div>
         <div class="zhongjian">
             <input type="text" v-model="node.name" class='myinput' @keydown.stop='handleKeyDown($event)' >
