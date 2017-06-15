@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./css/font-awesome.min.css">
+    <title>{{ title }}</title>
+    <style>
+    .tree-node {
+     width:720px;
+     display:block;
+    }
+    
+    li {
+        padding: 0.2em 0.5em;
+    }
+    
+    .tree {
+        background-color: #EFEFEF;
+        max-width: 720px;
+    }
+    
+    .myinput {
+        BACKGROUND-COLOR: transparent;
+        border: none;
+        width:90%
+    }
+    .node-children{
+    border-left: 1px solid #00aaff;
+    margin-left: 5px;
+    padding-left: 15px;
+    padding-bottom: 4px;
+    width:inherit;
+    }
+    .kaitou{
+    display:inline;
+    font-size: 5px;
+    }
+    .zhongjian{
+    position:relative;
+    left:12px;
+    font-size: 14px;
+    cursor:text;
+    white-space: pre-wrap;
+    border:1px #f00 solid;
+    -webkit-line-break: after-white-space;
+
+
+    }
+    
+    </style>
+</head>
+
+<body>
+    <div id='app'>
+        <h1>{{ title }}</h1>
+        <h2>树：</h2>
+        <div class="tree">
+            <tree :node="rootNode.children[0]"></tree>
+        </div>
+        <h2>JSON：</h2>
+        <textarea style="width:100%; height:20em;" tabindex="-1">{{ tree_json }}</textarea>
+    </div>
+</body>
+<template id="tree-node-tpl">
+    <div class="tree-node" draggable="true" 
+    @dragstart.stop="handleDragStart($event)"
+    @drop.stop="handleDrop($event)" 
+    @dragenter.stop="handleDragEnter" 
+    @dragleave="handleDragLeave" 
+    @dragover.prevent="handleDragOver" 
+    @dragend.prevent="handleDragEnd">
+        <div class='node-content' >
+            <div class="kaitou fa fa-circle-thin"></div>
+            <div class="zhongjian" contenteditable="true" autocapitalize="off" v-model="node.name" 
+            @input="node.name = $event.target.innerText"  
+            @keydown.stop='handleKeyDown($event)' @click="testclick">{{ node.name }}
+                <!-- <input type="text" v-model="node.name" class='myinput' @keydown.stop='handleKeyDown($event)' > -->
+                <small v-if="show_oprators">
+                    <a @click="editNode" href="#">edit</a> | <a @click="removeNode" href="#">remove</a> | <a @click="addNode" href="#">add</a>
+                </small>
+            </div>
+        </div>
+        <div  class='node-children' v-if="node.children.length>0">
+            <tree-node v-for="node in node.children" :node.sync="node"></tree-node>
+        </div>
+    </div>
+</template>
+<script src="https://cdn.bootcss.com/vue/2.2.2/vue.min.js"></script>
+<script>
+var TreeNode = Vue.extend({
+    data: function() {
+        return {
+            show_oprators: false,
+            is_draged: false,
+            readonly_op: false,
+        }
+    },
+    name: 'tree-node',
+    props: ['node'],
+    template: '#tree-node-tpl',
+
+    methods: {
+        testclick:function(){
+            console.log('aaaaaaaaaaaaaaaaaaaa')
+        },
+        handleDrop: function(e) {
+            var vm = window.__drop_node__;
+            this.$el.style.backgroundColor = '';
+            vm.$el.style.backgroundColor = '';
+            /*console.log()*/
+            var __parent__ = this;
+            while (__parent__ !== undefined) {
+                if (__parent__ === vm) {
+                    return;
+                }
+                __parent__ = __parent__.$parent;
+            }
+            var current_node = vm.node;
+            vm.$parent.node.children = vm.$parent.node.children.filter(function(node) {
+                    return node !== current_node
+                })
+                //有子节点
+            if (this.node.children.length > 0) {
+                this.node.children.unshift(current_node)
+            } else { //无子节点
+                var index = this.$parent.node.children.indexOf(this.node) + 1
+                this.$parent.node.children.splice(index, 0, current_node)
+            }
+        },
+
+        handleDragEnd: function() {
+            this.$el.style.backgroundColor = ''
+        },
+
+        handleDragStart: function(e) {
+            this.show = false
+            this.is_draged = true
+            window.__drop_node__ = this
+            //this.$el.style.backgroundColor = 'grey'
+        },
+
+        handleDragLeave: function() {
+            this.$el.style.border=""
+            if (!this.is_draged) this.$el.style.backgroundColor = "";
+        },
+        handleDragOver: function() {},
+
+        showOprators: function() {
+            this.show_oprators = true;
+        },
+        hideOprators: function() {
+            this.show_oprators = false;
+        },
+        toggle: function() {
+            this.readonly_op = false;
+        },
+
+        addNode: function() {
+            
+            console.log(this)
+            
+            if(this.node.children.length>0){
+                this.node.children.unshift( {
+                    name: '================',
+                    children: []
+                })
+                this.$nextTick(function() {
+                    this.$children[0].$el.getElementsByClassName("myinput")[0].focus()
+                })
+                return
+            }
+
+            var index = this.$parent.node.children.indexOf(this.node) + 1
+            if (index >= 0) {
+                console.log("have children")
+                this.$parent.node.children.splice(index, 0, {
+                    name: '================',
+                    children: []
+                });
+                this.$nextTick(function() {
+                    this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
+                })
+            } else {
+                this.$parent.node.children.splice(index, 0, {
+                    name: '================',
+                    children: []
+                });
+                this.$nextTick(function() {
+                    this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
+                })
+            }
+        },
+
+        removeNode: function() {
+            if (confirm('Do you want to remove node: ' + this.node.name)) {
+                var current_node = this.node;
+                this.$parent.node.children = this.$parent.node.children.filter(function(node) {
+                    return node !== current_node;
+                });
+            }
+        },
+
+        editNode: function() {
+            var name = prompt("Input the name of new node", this.node.name);
+            if (!!name && !!name.trim()) {
+                this.node.name = name.trim();
+            }
+        },
+
+        nodeDown: function() {
+            var index = this.$parent.node.children.indexOf(this.node)
+                //如果是顶级节点，不会有父节点，indexof函数返回-1
+            if (index > 0) { //非根节点
+                var vm = this
+                var current_node = vm.node;
+                //从现有位置删除本节点
+                vm.$parent.node.children = vm.$parent.node.children.filter(function(node) {
+                    return node !== current_node;
+                });
+                //在当前节点的 兄节点的 子节点的最后 加入当前节点
+                this.$parent.node.children[index - 1].children.push(current_node);
+                this.$nextTick(function() { //当前节点获得焦点
+                    var newindex = this.$parent.$children[index - 1].$children.length
+                        //this.$parent.$children[index-1].$children[newindex-1].$el.getElementsByClassName("myinput")[0].focus()
+                    this.setfocus(this.$parent.$children[index - 1].$children[newindex - 1])
+                })
+            }
+        },
+
+        setfocus: function(yuanshu) {
+            yuanshu.$el.getElementsByClassName("myinput")[0].focus()
+        },
+
+        handleKeyDown: function(e) {
+            //console.log(e.keyCode)
+            if (e.keyCode == 9 && e.shiftKey) { //shift+tab
+                event.preventDefault()
+                var node_class_name = 'tree-node'
+                var p1 = this.$parent
+                var p2 = p1.$parent
+                if (p2.$el.className == node_class_name) { //可以向上
+                    var vm = this
+                    var current_node = vm.node
+                    var index = p2.node.children.indexOf(p1.node)
+                        //从现有位置删除本节点
+                    p1.node.children = p1.node.children.filter(function(node) {
+                        return node !== current_node;
+                    });
+                    p2.node.children.splice(index + 1, 0, current_node)
+                    this.$nextTick(function() { //当前节点获得焦点
+                        // this.$parent.$parent.$children[index+1].$el.getElementsByClassName("myinput")[0].focus()
+                        this.setfocus(this.$parent.$parent.$children[index + 1])
+                    })
+                }
+                return
+            }
+
+            if (e.keyCode == 9) { //tab
+                event.preventDefault()
+                this.nodeDown()
+                return
+            }
+
+            if (e.keyCode == 13) { //enter
+                this.addNode()
+                return
+            }
+
+            function fup(docNode) {
+                var index = docNode.$children.length
+                if (index > 0) {
+                    return fup(docNode.$children[index - 1])
+                } else {
+                    return docNode
+                }
+            }
+
+            function fdown(docNode) {
+                var index = docNode.$parent.node.children.indexOf(docNode.node)
+                var array_length = docNode.$parent.node.children.length - 1
+                if (index < array_length) {
+                    return docNode.$parent.$children[index + 1]
+                }
+                return fdown(docNode.$parent)
+            }
+
+            if (e.keyCode == 38) { //UP
+                //获得当前节点的在父节点中的位置
+                var index = this.$parent.node.children.indexOf(this.node)
+                var docNode = this.$parent
+                    //如果存在兄弟节点，递归查询兄弟节点最后一个子节点获得焦点
+                    //如果不存在兄弟节点，则父节点获得焦点
+                if (index > 0) {
+                    docNode = fup(this.$parent.$children[index - 1])
+                }
+                this.setfocus(docNode)
+            }
+
+            if (e.keyCode == 40) { //Down
+                var index = this.$parent.node.children.indexOf(this.node)
+                var array_length = this.$parent.node.children.length - 1
+                    //以下三个顺序不能乱。
+                    //如果自己有子元素，折到自己子元素第一个
+                    //如果自己有弟节点则到弟节点
+                    //如果自己的父元素有弟节点，折到该元素
+                if (this.node.children.length > 0) {
+                    this.setfocus(this.$children[0])
+                    return
+                }
+                this.setfocus(fdown(this))
+            }
+
+            if(e.keyCode==46){
+                console.log()
+                console.log(this.$el.innerText)
+                console.log(this.$el.innerHTML)
+            }
+
+        },
+    }
+});
+
+var Tree = Vue.extend({
+    name: 'tree',
+    props: ['node'],
+    components: {
+        'tree-node': TreeNode
+    },
+    template: '<tree-node :node.sync="node"></tree-node>',
+});
+
+var app = new Vue({
+    el: '#app',
+    data: {
+        rootNode: {
+            name: 'Root',
+            children: [{
+                name: "first",
+                children: [{
+                    name: 'A',
+                    children: [{
+                        name: 'A1',
+                        children: []
+                    }, {
+                        name: 'A2',
+                        children: []
+                    }]
+                }, {
+                    name: 'B',
+                    children: [{
+                        name: 'B1',
+                        children: []
+                    }, {
+                        name: 'B2',
+                        children: []
+                    }]
+                }, {
+                    name: 'C',
+                    children: [{
+                        name: 'C1',
+                        children: []
+                    }, {
+                        name: 'C2',
+                        children: []
+                    }]
+                }, ]
+            }]
+        },
+
+        title: 'Vue 无限层级树增删改以及拖拽节点'
+    },
+    computed: {
+        tree_json: function() {
+            return JSON.stringify(this.rootNode);
+        }
+    },
+    components: {
+        'tree': Tree
+    },
+});
+</script>
+<html>
