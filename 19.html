@@ -5,19 +5,30 @@
     <link rel="stylesheet" href="./css/font-awesome.min.css">
     <title>{{ title }}</title>
     <style>
-    .tree-node {
-     display: block;
+    
+    div {
+    display: block;
+    }
 
-    }
     
-    li {
-        padding: 0.2em 0.5em;
+    .paper {   /*整个树*/
+    margin: 30px auto 20px;
+    max-width: 720px;
+    padding: 30px 50px 200px 50px;
+    background: #FFF;
+    -webkit-box-shadow: 0 1px 2px 0 rgba(0,0,0,0.3);
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.3);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    overflow-x :scroll;
     }
-    
-    .tree {
-        background-color: #EFEFEF;
+
+    .tree-line {  
+    cursor: text;
     }
-    
+
     .myinput {
         BACKGROUND-COLOR: transparent;
         border: none;
@@ -29,15 +40,8 @@
         padding-top: 10px;
         padding-bottom: 10px;
         border: 0
-        
     }
-    .node-first-layer{
-    position: relative;
-    left:0px;
-    margin-left: 0px;
-    padding-left: 0px;
-    padding-bottom: 4px;
-    }
+
     .node-first-children{
     position:relative;
     left:0px;
@@ -51,7 +55,18 @@
     padding-left: 15px;
     padding-bottom: 4px;
     }
+    
+    .node-content{
+    min-height: 20px;
+    position:relative;
+
+    }
+
     .kaitou{
+        position: absolute;
+        left: 0px;
+        top:6px;
+    margin:auto,0;
     display:block;
     border:1px solid #a1a1a1;
     width: 5px;
@@ -59,14 +74,17 @@
     -webkit-border-radius: 50%;
     -moz-border-radius: 50%;
     border-radius: 50%;
+    cursor: pointer;
+
     }
     .zhongjian{
-    display:inline;
+    display:block;
     position:relative;
     left:12px;
     font-size: 14px;
     width:inherit;
     }
+
 
     .node-title{
     display:block;
@@ -77,10 +95,7 @@
     
     }
 
-    .node-content{
-    width:inherit;
-    min-height: 20px;
-    }
+    
     .drag_targ {
     border-bottom-style:dotted;
     border-width:1px;
@@ -90,7 +105,6 @@
       color: red;
     }
 
-
     </style>
 </head>
 
@@ -98,7 +112,7 @@
     <div id='app'>
         <h1>{{ title }}</h1>
         <h2>树：</h2>
-        <div class="tree">
+        <div class="paper">
             <tree :node="rootNode"></tree>
         </div>
         <h2>JSON：</h2>
@@ -106,30 +120,32 @@
     </div>
 </body>
 <template id="tree-node-tpl">
-<div class="tree-node" draggable="true"
+<div class="tree-line" draggable="true"
     @dragstart.stop="handleDragStart($event)"
     @drop.stop="handleDrop($event)" 
-    @click.stop="handeClick($event)"
+    
     @dragenter.stop="handleDragEnter($event)" 
     @dragleave="handleDragLeave($event)" 
     @dragend.prevent.stop="handleDragEnd($event)"
     @dragover.stop.prevent="handleDragOver($event)" 
      >
-     <div class='node-content' v-if="node.isRoot==true" >
-        
-        <div class="node-title">
-            <input type="text" v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)' >
+     <!-- 标题 -->
+     <div class='node-content' v-if="node.isRoot==true" >  
+        <div class="node-title" >
+            <div contenteditable v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)" > {{ node.name}}</div>
         </div>
     </div>
 
+    <!-- 正文 -->
     <div class='node-content' v-else>
         <div class="kaitou"></div>
         <div class="zhongjian">
-            <!-- <input type="text" v-model="node.name" class='myinput' @keydown.stop='handleKeyDown($event)' > -->
-            <div  contenteditable v-model="node.name" class='myinput' @keydown.stop='handleKeyDown($event)' > {{node.name}} </div>
+            <div  contenteditable v-model="node.name" class='myinput'  v-text="node.name" @input="node.name=$event.target.innerText" @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)">  </div>
         </div>
     </div>
 
+    <!-- 针对标题层下的层调整格式 -->
+    <!-- 标题层为root层 -->
     <div  class='node-first-children' v-if="node.children.length>0&&node.isRoot==true">
         <tree-node v-for="node in node.children" :node.sync="node"></tree-node>
     </div>
@@ -265,12 +281,11 @@ var TreeNode = Vue.extend({
 
         addNode: function() {
             
-            console.log("===addNode:enter====",this)
             
             if(this.node.children.length>0||this.node.isRoot){//是标题元素，或者当前节点有子节点，新增添加当前节点的子节点
-                console.log("=======isRoot======")
+            /*    console.log("=======isRoot======")*/
                 this.node.children.unshift( {
-                    name: '================',
+                    name: '1',
                     children: []
                 })
                 this.$nextTick(function() {
@@ -283,7 +298,7 @@ var TreeNode = Vue.extend({
             
             
                  this.$parent.node.children.splice(index, 0, {  //没有子元素，同级添加
-                    name: '================',
+                    name: '2',
                     children: []
                 });
                  this.$nextTick(function() {
@@ -352,8 +367,9 @@ var TreeNode = Vue.extend({
         handleKeyDown: function(e) {
             
             if (e.keyCode == 9 && e.shiftKey) { //shift+tab
+                console.log("abcdefg")
                 event.preventDefault()  //取消默认时间
-                var node_class_name = 'tree-node'
+                var node_class_name = 'tree-line'
                 var p1 = this.$parent
                 var p2 = p1.$parent
                 if (p2.$el.className == node_class_name) { //可以向上
@@ -447,7 +463,11 @@ var app = new Vue({
         rootNode: {
             name: 'Root',
             isRoot:true,
-            children: []
+            children: [{
+                name: "first",
+                children: [
+                    ]
+                }]
         },
 
         title: 'Vue 无限层级树增删改以及拖拽节点'
