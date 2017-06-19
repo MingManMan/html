@@ -132,8 +132,7 @@
      <!-- 标题 -->
      <div class='node-content' v-if="node.isRoot==true" >  
         <div class="node-title" >
-        <Mytextarea v-mode='node.name' @click.stop="handeClick($event)">11111111111111</Mytextarea>
-            <!-- <div contenteditable v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)" > {{ node.name}}</div> -->
+            <div contenteditable v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)" > {{ node.name}}</div>
         </div>
     </div>
 
@@ -141,7 +140,9 @@
     <div class='node-content' v-else>
         <div class="kaitou"></div>
         <div class="zhongjian">
-        <Mytextarea v-mode='node.name' @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)"></Mytextarea>
+            
+        <div  contenteditable v-model="node.name" class='myinput'  v-text="node.name" @input="handleInput($event)" @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)">  </div>
+
             <!-- <div  contenteditable v-model="node.name" class='myinput'  v-text="node.name" @input="node.name=$event.target.innerText" @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)">  </div> -->
         </div>
     </div>
@@ -159,22 +160,31 @@
 </div>
 </template>
 
-<template id='mytextarea-temp'>
-    <div class='myinput' contenteditable v-text='innerHTML' @input="handle_input($event.target.innerText)"></div>
-</template>
-
 <script src="https://cdn.bootcss.com/vue/2.2.2/vue.min.js"></script>
 <script>
-var Mytextarea=Vue.extend({
-    name:'mytextarea',
-    props:['node'],
-    template:'#mytextarea-temp',
-    methods:{
-        handle_input(inputvalue){
-            this.$emit('input',inputvalue)
+var getCaretPosition = function(oField) {
+    var iCaretPos = 0;
+    var doc = oField.ownerDocument || oField.document;
+    var win = doc.defaultView || doc.parentWindow;
+    var sel;
+    if (typeof win.getSelection != "undefined") {
+        sel = win.getSelection();
+        if (sel.rangeCount > 0) {
+            var range = win.getSelection().getRangeAt(0);
+            var preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(oField);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            iCaretPos = preCaretRange.toString().length;
         }
+    } else if ( (sel = doc.selection) && sel.type !== 'Control') {
+        var textRange = sel.createRange();
+        var preCaretTextRange = doc.body.createTextRange();
+        preCaretTextRange.moveToElementText(oField);
+        preCaretTextRange.setEndPoint('EndToEnd', textRange);
+        iCaretPos = preCaretTextRange.text.length;
     }
-});
+    return (iCaretPos);
+};
 
 var TreeNode = Vue.extend({
     data: function() {
@@ -185,18 +195,19 @@ var TreeNode = Vue.extend({
         }
     },
 
-    components: {
-        'Mytextarea': Mytextarea
-    },
     name: 'tree-node',
     props: ['node'],
     template: '#tree-node-tpl',
     methods: {
         handeClick:function(e){
             console.log(this.node)
-            
-            
         },
+        handleInput:function(e){
+            /*var re=/(^\s*)|(\s*$)/g*/
+            var newstring=e.target.innerText
+            this.node.name=newstring
+        },
+
         handleDrop: function(e) {
             var vm = window.__drop_node__;
             this.$el.children[0].classList.remove('drag_targ')
@@ -326,24 +337,6 @@ var TreeNode = Vue.extend({
                  this.$nextTick(function() {
                     this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
                 })
-
-             /*   console.log("have children")
-                this.$parent.node.children.splice(index, 0, {
-                    name: '================',
-                    children: []
-                });
-                this.$nextTick(function() {
-                    this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
-                })
-            } else {
-                this.$parent.node.children.splice(index, 0, {
-                    name: '================',
-                    children: []
-                });
-                this.$nextTick(function() {
-                    this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
-                })
-            }*/
         },
 
         removeNode: function() {
@@ -385,7 +378,7 @@ var TreeNode = Vue.extend({
         setfocus: function(yuanshu) {
             yuanshu.$el.getElementsByClassName("myinput")[0].focus()
         },
-
+       
         handleKeyDown: function(e) {
             
             if (e.keyCode == 9 && e.shiftKey) { //shift+tab
@@ -418,6 +411,16 @@ var TreeNode = Vue.extend({
             }
 
             if (e.keyCode == 13) { //enter
+                console.log(getCaretPosition(this.$el))
+                console.log(this.node.name)
+                //判断回车的位置
+                //头部
+
+                    //在当前节点前插入兄弟节点
+                //中间
+                    //截断当前节点内容，后续内容作为新节点内容
+                //末尾
+                    //插入新节点
                 this.addNode()
                 return
             }
