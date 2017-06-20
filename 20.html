@@ -418,6 +418,7 @@
                             }
                             else{//无兄节点
                                 if(p_node.node.isRoot!=true){//父节点非根节点
+                                    this.clear_select_node_style() //先是选中元素取消选中模式
                                     window.select_node.splice(0,window.select_node.length)
                                     window.select_node.unshift(p_node)
                                     p_node.$el.style.backgroundColor='grey'
