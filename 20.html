@@ -6,11 +6,12 @@
     <link rel="stylesheet" href="./css/font-awesome.min.css">
     <title>{{ title }}</title>
     <style>
+    .totle{
+        background: #f2f2f2;
+    }
         div {
             display: block;
         }
-
-
         .paper {
             /*整个树*/
             margin: 30px auto 20px;
@@ -96,7 +97,7 @@
         }
 
         .select_style{
-            background: grey;
+            background: #B1D7FE;
         }
         .drag_targ {
             border-bottom-style: dotted;
@@ -111,7 +112,7 @@
 </head>
 
 <body>
-    <div id='app'>
+    <div id='app' class="totle">
         <h1>{{ title }}</h1>
         <h2>树：</h2>
         <div class="paper">
@@ -206,7 +207,6 @@
                 this.node.name = newstring
             },
             handleDrop:function(e){
-
                 if(window.select_node.length>0){
                     for(i=0;i<window.select_node.length;i++){
                         window.select_node[i].$el.style.backgroundColor=''
@@ -217,9 +217,9 @@
                             this.handleDrop_fun(e,window.select_node[i-1],window.select_node[i])
                         }
                     }
+                    this.clear_select_node()
                     return
                 }
-
                 this.handleDrop_fun(e)
                 this.clear_select_node()
             },
@@ -383,10 +383,6 @@
             },
 
             handleKeyDown: function (e) {
-
-                var select_node=function(count){
-
-                } 
                 if (e.keyCode == 38 && e.shiftKey) { //shift+Uparrow
                     //判断是否是大于第一次按shift+Uparrow键
                     //如果不是，看选中列表中的是否存在要有元素
@@ -398,33 +394,31 @@
                             //有兄节点，兄节点推入节点列表
                             //兄节点是root节点，不做操作
                             //有父节点，从列表中退出第一元素的所有兄弟节点，父节点推出
-
                     window.shift_arrow_count=window.shift_arrow_count+1
                     console.log(window.shift_arrow_count)
                     if(window.shift_arrow_count>1){
                         if(window.select_node.length==0){
-                            console.log("this.select_node.length==0")
                             window.select_node.unshift(this)
-                            this.$el.style.backgroundColor='grey'
+                            //this.$el.style.backgroundColor='grey'
+                            this.$el.classList.add('select_style')
                         }
                         else{
                             var p_node=window.select_node[0].$parent
                             var index = p_node.node.children.indexOf(window.select_node[0].node)
-                            console.log(window.select_node[0].node.name)
-                            console.log("p_node.node.children.indexOf(this.node)="+index)
                             if(index>0){//有兄节点
                                 window.select_node.unshift(p_node.$children[index-1])
-                                p_node.$children[index-1].$el.style.backgroundColor='grey'
+                                //p_node.$children[index-1].$el.style.backgroundColor='grey'
+                                p_node.$children[index-1].$el.classList.add('select_style')
                             }
                             else{//无兄节点
                                 if(p_node.node.isRoot!=true){//父节点非根节点
                                     this.clear_select_node_style() //先是选中元素取消选中模式
                                     window.select_node.splice(0,window.select_node.length)
                                     window.select_node.unshift(p_node)
-                                    p_node.$el.style.backgroundColor='grey'
+                                    //p_node.$el.style.backgroundColor='grey'
+                                    p_node.$el.classList.add('select_style')
                                 }
                             }
-
                         }
                     }
                     return
@@ -532,7 +526,8 @@
             },
             clear_select_node_style:function(){
                 for(i=0;i<window.select_node.length;i++){
-                    window.select_node[i].$el.style.backgroundColor=''
+                    //window.select_node[i].$el.style.backgroundColor=''
+                    window.select_node[i].$el.classList.remove('select_style')
                 }
             },
             is_parent: function (snode) {
