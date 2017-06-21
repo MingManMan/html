@@ -24,7 +24,7 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            overflow-x: scroll;
+            
         }
 
         .tree-line {
@@ -42,6 +42,7 @@
             padding-top: 10px;
             padding-bottom: 10px;
             border: 0
+            
         }
 
         .node-first-children {
@@ -90,10 +91,11 @@
 
         .node-title {
             display: block;
-            margin: auto 0;
             position: relative;
             left: 0px;
             border-bottom: 1px solid #e5e6e8;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
         }
 
         .select_style{
@@ -114,7 +116,7 @@
 <body>
     <div id='app' class="totle">
         <h1>{{ title }}</h1>
-        <h2>树：</h2>
+        
         <div class="paper">
             <tree :node="rootNode"></tree>
         </div>
@@ -185,6 +187,7 @@
 
     window.shift_arrow_count=0
     window.select_node=[]
+    window.arrow_up_down=''
     var TreeNode = Vue.extend({
         data: function () {
             return {
@@ -395,11 +398,9 @@
                             //兄节点是root节点，不做操作
                             //有父节点，从列表中退出第一元素的所有兄弟节点，父节点推出
                     window.shift_arrow_count=window.shift_arrow_count+1
-                    console.log(window.shift_arrow_count)
                     if(window.shift_arrow_count>1){
                         if(window.select_node.length==0){
                             window.select_node.unshift(this)
-                            //this.$el.style.backgroundColor='grey'
                             this.$el.classList.add('select_style')
                         }
                         else{
@@ -422,6 +423,9 @@
                         }
                     }
                     return
+                }
+                if (e.keyCode == 40 && e.shiftKey){//shift+arrowDown
+                    
                 }
                 this.clear_select_node()
                 if (e.keyCode == 9 && e.shiftKey) { //shift+tab
@@ -550,7 +554,6 @@
                     }
                 }
                 return check_parenta
-
             },
         }
     });
@@ -577,8 +580,7 @@
                     children: []
                 }]
             },
-
-            title: 'Vue 无限层级树增删改以及拖拽节点'
+            title: '我的幕布'
         },
         computed: {
             tree_json: function () {
