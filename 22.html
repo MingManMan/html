@@ -179,8 +179,8 @@ var getCaretPosition = function(oField) {
 window.shift_arrow_count = 0
 window.select_node = []
 window.arrow_up_down = 0 //1 上，-1下，0无方向
-window.pos_node='' //定位节点
-//window.pos_node_index=-1 //用户确定选中多个节点拖动时原始节点的位置
+window.pos_node = '' //定位节点
+    //window.pos_node_index=-1 //用户确定选中多个节点拖动时原始节点的位置
 var TreeNode = Vue.extend({
     data: function() {
         return {
@@ -203,18 +203,18 @@ var TreeNode = Vue.extend({
             this.node.name = newstring
         },
         handleDrop: function(e) {
-            window.pos_node=this  //拖动定位
+            window.pos_node = this //拖动定位
             if (window.select_node.length > 0) { //可能有多个
                 for (i = 0; i < window.select_node.length; i++) {
-                    this.handleDrop_fun(e,window.pos_node,window.select_node[i],i)  //事件,定位节点，被移动节点，移动节点序号
+                    this.handleDrop_fun(e, window.pos_node, window.select_node[i], i) //事件,定位节点，被移动节点，移动节点序号
                 }
                 this.clear_select_node()
                 return
             }
-            this.handleDrop_fun(e,this,window.__drop_node__,0)
+            this.handleDrop_fun(e, this, window.__drop_node__, 0)
             this.clear_select_node()
         },
-        handleDrop_fun: function(e,el_node,vm,mult) {
+        handleDrop_fun: function(e, el_node, vm, mult) {
             console.log(mult)
             el_node.$el.children[0].classList.remove('drag_targ')
             vm.$el.children[0].classList.remove('drag_targ')
@@ -227,25 +227,11 @@ var TreeNode = Vue.extend({
             }
             var current_node = vm.node;
             vm.$parent.node.children = vm.$parent.node.children.filter(function(node) {
-                    return node !== current_node
-                })
-
-            
-            //if (mult >= 0) {
-                var index = el_node.$parent.node.children.indexOf(el_node.node) + 1 + mult
-                el_node.$parent.node.children.splice(index, 0, current_node)
-                return
-            //}
-            
-            //单个元素
-          /*  if (el_node.node.children.length > 0) {
-                console.log("有子节点")
-                el_node.node.children.unshift(current_node)
-            } else { //无子节点
-                console.log("无子节点")
-                var index = el_node.$parent.node.children.indexOf(el_node.node) + 1
-                el_node.$parent.node.children.splice(index, 0, current_node)
-            }*/
+                return node !== current_node
+            })
+            var index = el_node.$parent.node.children.indexOf(el_node.node) + 1 + mult
+            el_node.$parent.node.children.splice(index, 0, current_node)
+            return
         },
         handleDragEnd: function(e) {
             //this.$el.style.backgroundColor = ''
@@ -304,16 +290,12 @@ var TreeNode = Vue.extend({
                 })
                 return
             }
-
             var index = this.$parent.node.children.indexOf(this.node) + 1
-
-
             this.$parent.node.children.splice(index, 0, added_node);
             this.$nextTick(function() {
                 this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
             })
         },
-
         addNodeUp: function() { //节点上方加入节点
             //确定本节点不是title节点
             var index = this.$parent.node.children.indexOf(this.node)
@@ -406,29 +388,28 @@ var TreeNode = Vue.extend({
                             }
                         }
                     } //选择方向向上
-                    else { //选择方向向下  按键向下，删除内容
-
+                    else { //选择方向向下  按键向上，删除内容
+                        var dd=window.select_node.pop() //弹出最后一个元素
+                        dd.$el.classList.remove('select_style') //删除选中样式
                     } //选择方向向下
                 } //选择节点数组不空    
                 return
             }
 
             function getParent(p_node) {
-                
                 if (p_node.node == undefined) {
                     return ddd
                 }
                 var ddd = undefined
                 var pp_node = p_node.$parent //父节点
-                
                 var pp_index = pp_node.node.children.indexOf(p_node.node)
                 if (pp_index < pp_node.node.children.length - 1) { //父节点有弟节点
-                    ddd=pp_node.$children[pp_index + 1]
-                    
+                    ddd = pp_node.$children[pp_index + 1]
                     return ddd
                 }
                 return getParent(pp_node)
             }
+
             if (e.keyCode == 40 && e.shiftKey) { //shift+arrowDown按键向上
                 if (window.select_node.length == 0) { //选择节点数组为空
                     window.arrow_up_down = -1 //方向向下
@@ -444,23 +425,17 @@ var TreeNode = Vue.extend({
                             p_node.$children[index + 1].$el.classList.add('select_style')
                             window.select_node.push(p_node.$children[index + 1])
                         } else { //选择节点数组最末节点的父节点的弟节点
-                            /*var pp_node = p_node.$parent //父父节点
-                            var pp_index = pp_node.node.children.indexOf(p_node.node)
-                            if (pp_index < pp_node.node.children.length - 1) { //父节点有弟节点
-                                pp_node.$children[index + 1].$el.classList.add('select_style')
-                                window.select_node.push(pp_node.$children[index + 1])
-                            }*/
                             var ddd = getParent(p_node)
                             console.log("getParent  ", ddd)
-                            if (ddd!= undefined) {
+                            if (ddd != undefined) {
                                 ddd.$el.classList.add('select_style')
                                 window.select_node.push(ddd)
                             }
                         }
-
                     } //选择方向向下
-                    else { //选择方向向上
-
+                    else { //选择方向向上  按键向下
+                        var dd=window.select_node.shift() //弹出最后一个元素
+                        dd.$el.classList.remove('select_style') //删除选中样式
                     } //选择方向向上
                 } //选择节点数组不为空
                 return
@@ -610,8 +585,41 @@ var Tree = Vue.extend({
 var app = new Vue({
     el: '#app',
     data: {
-        rootNode: { "name": "Root", "isRoot": true, "children": [{ "name": "1", "children": [] }, { "name": "2", "children": [] }, { "name": "3", "children": [{ "name": "4", "children": [{ "name": "5", "children": [{ "name": "6", "children": [] }] }] }] }, { "name": "7", "children": [] }, { "name": "8", "children": [] }, { "name": "9", "children": [] }, { "name": "10", "children": [] }] }
-,
+        rootNode: {
+            "name": "Root",
+            "isRoot": true,
+            "children": [{
+                "name": "1",
+                "children": []
+            }, {
+                "name": "2",
+                "children": []
+            }, {
+                "name": "3",
+                "children": [{
+                    "name": "4",
+                    "children": [{
+                        "name": "5",
+                        "children": [{
+                            "name": "6",
+                            "children": []
+                        }]
+                    }]
+                }]
+            }, {
+                "name": "7",
+                "children": []
+            }, {
+                "name": "8",
+                "children": []
+            }, {
+                "name": "9",
+                "children": []
+            }, {
+                "name": "10",
+                "children": []
+            }]
+        },
         title: '我的幕布'
     },
     computed: {
