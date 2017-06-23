@@ -193,7 +193,6 @@ var TreeNode = Vue.extend({
     methods: {
         handeClick: function(e) {
             this.clear_select_node()
-            console.log(this)
                 /*this.$el.style.backgroundColor='grey'*/
         },
         handleInput: function(e) {
@@ -204,6 +203,7 @@ var TreeNode = Vue.extend({
         handleDrop: function(e) {
             if (window.select_node.length > 0) { //可能有多个
                 for (i = 0; i < window.select_node.length; i++) {
+                    console.log(window.select_node[i])
                     if (i == 0) {
                         this.handleDrop_fun(e, this, window.select_node[0], 1)
                     } else {
@@ -217,7 +217,6 @@ var TreeNode = Vue.extend({
             this.clear_select_node()
         },
         handleDrop_fun: function(e) {
-            
             var el_node = arguments[1] ? arguments[1] : this //拖动到的目标元素
             var vm = arguments[2] ? arguments[2] : window.__drop_node__ //被拖动元素
             var mult = arguments[3] ? arguments[3] : 0
@@ -238,9 +237,6 @@ var TreeNode = Vue.extend({
             if (mult > 0) {
                 var index = el_node.$parent.node.children.indexOf(el_node.node) + 1
                 el_node.$parent.node.children.splice(index, 0, current_node)
-                el_node.$parent.$nextTick(function() {   
-                    console.log("ok")
-                    })
                 return
             }
 
@@ -412,28 +408,28 @@ var TreeNode = Vue.extend({
                         }
                     } //选择方向向上
                     else { //选择方向向下  按键向下，删除内容
+
                     } //选择方向向下
                 } //选择节点数组不空    
                 return
             }
 
             function getParent(p_node) {
-                if (p_node.node == undefined && p_node.node) {
+                console.log(p_node.node.name)
+                if (p_node.node == undefined) {
                     return ddd
                 }
                 var ddd = undefined
                 var pp_node = p_node.$parent //父节点
+                
                 var pp_index = pp_node.node.children.indexOf(p_node.node)
                 if (pp_index < pp_node.node.children.length - 1) { //父节点有弟节点
-                    ddd = pp_node.$children[pp_index + 1]
-                    if (ddd.node.isRoot != true) {
-                        return ddd
-                    }
-                    return undefined
+                    ddd=pp_node.$children[pp_index + 1]
+                    console.log("i find it",ddd.node.name)
+                    return ddd
                 }
-                return getParent(pp_node)
+                getParent(pp_node)
             }
-
             if (e.keyCode == 40 && e.shiftKey) { //shift+arrowDown按键向上
                 if (window.select_node.length == 0) { //选择节点数组为空
                     window.arrow_up_down = -1 //方向向下
@@ -446,6 +442,7 @@ var TreeNode = Vue.extend({
                         var p_node = window.select_node[window.select_node.length - 1].$parent
                         var index = p_node.node.children.indexOf(window.select_node[window.select_node.length - 1].node)
                         if (index < p_node.node.children.length - 1) { //有弟节点
+                            console.log("有弟节点")
                             p_node.$children[index + 1].$el.classList.add('select_style')
                             window.select_node.push(p_node.$children[index + 1])
                         } else { //选择节点数组最末节点的父节点的弟节点
@@ -456,7 +453,8 @@ var TreeNode = Vue.extend({
                                 window.select_node.push(pp_node.$children[index + 1])
                             }*/
                             var ddd = getParent(p_node)
-                            if (ddd != undefined) {
+                            console.log("getParent  ", ddd)
+                            if (ddd!= undefined) {
                                 ddd.$el.classList.add('select_style')
                                 window.select_node.push(ddd)
                             }
@@ -615,38 +613,11 @@ var app = new Vue({
     el: '#app',
     data: {
         rootNode: {
-            "name": "Root",
-            "isRoot": true,
-            "children": [{
-                "name": "1",
-                "children": []
-            }, {
-                "name": "2",
-                "children": []
-            }, {
-                "name": "3",
-                "children": [{
-                    "name": "4",
-                    "children": [{
-                        "name": "5",
-                        "children": [{
-                            "name": "6",
-                            "children": []
-                        }]
-                    }]
-                }]
-            }, {
-                "name": "7",
-                "children": []
-            }, {
-                "name": "8",
-                "children": []
-            }, {
-                "name": "9",
-                "children": []
-            }, {
-                "name": "10",
-                "children": []
+            name: 'Root',
+            isRoot: true,
+            children: [{
+                name: "first",
+                children: []
             }]
         },
         title: '我的幕布'
