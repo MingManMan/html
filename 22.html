@@ -324,10 +324,10 @@ var TreeNode = Vue.extend({
             this.addNode(newnode)
         },
         removeNode: function() {
-                var current_node = this.node;
-                this.$parent.node.children = this.$parent.node.children.filter(function(node) {
-                    return node !== current_node;
-                });
+            var current_node = this.node;
+            this.$parent.node.children = this.$parent.node.children.filter(function(node) {
+                return node !== current_node;
+            });
         },
 
         editNode: function() {
@@ -387,14 +387,14 @@ var TreeNode = Vue.extend({
                         }
                     } //选择方向向上
                     else { //选择方向向下  按键向上，删除内容
-                        var dd=window.select_node.pop() //弹出最后一个元素
+                        var dd = window.select_node.pop() //弹出最后一个元素
                         dd.$el.classList.remove('select_style') //删除选中样式
                     } //选择方向向下
                 } //选择节点数组不空    
                 return
             }
 
-            function getParent(p_node) {  //为了能回溯父节点
+            function getParent(p_node) { //为了能回溯父节点
                 if (p_node.node == undefined) {
                     return ddd
                 }
@@ -432,7 +432,7 @@ var TreeNode = Vue.extend({
                         }
                     } //选择方向向下
                     else { //选择方向向上  按键向下
-                        var dd=window.select_node.shift() //弹出最后一个元素
+                        var dd = window.select_node.shift() //弹出最后一个元素
                         dd.$el.classList.remove('select_style') //删除选中样式
                     } //选择方向向上
                 } //选择节点数组不为空
@@ -462,15 +462,37 @@ var TreeNode = Vue.extend({
             }
 
             if (e.keyCode == 8) { //Backspace
-                /*e.preventDefault()*/
-                var pos = getCaretPosition(this.$el)
-                if (pos == 1&&(this.node.name.length==0)) { //在头部Backspace
-                    this.removeNode()
-                    return
+
+                function getLastChildren(s_node) {
+                    if (s_node.node.children.length == 0) { //没有子节点
+                        return s_node
+                    } else { //有子节点
+                        return getLastChildren(s_node.$children[s_node.node.children.length - 1])
+                    }
                 }
-                console.log("Backspace")
+
+                var pos = getCaretPosition(this.$el)
+                if (pos == 1 && (this.node.name.length == 0)) { //在头部Backspace
+                    //找到光标停留的节点，先是兄节点、在是父节点，一直向上
+                    var index = this.$parent.node.children.indexOf(this.node)
+                    if (index > 0) { //有兄节点
+                        //到达节点的最末端（最后的子节点）
+                        var t_node = getLastChildren(this.$parent.$children[index - 1])
+                        this.setfocus(t_node)
+                        this.setCaret(t_node, t_node.node.name.length)
+
+                    }
+                    //到达节点的最末端（最后的子节点）
+                    //设置光标停留
+                    //没有兄，找父节点，
+                    //如果父节点是顶级节点，设置第一个节点光标位置
+                    //如果父节点不是顶级节点，找到最末端，设置光标
+                    //设置光标停留
+                    if (this.node.children.length == 0) this.removeNode()
+                }
                 return
             }
+
             if (e.keyCode == 9) { //tab
                 e.preventDefault()
                 this.nodeDown()
@@ -540,6 +562,17 @@ var TreeNode = Vue.extend({
             }
         },
         ////////////////////////////////////////////////////////
+        setCaret: function(s_node, pos) {
+            range = document.createRange()
+            range.selectNodeContents(s_node.$el)
+            range.collapse(true)
+            range.setEnd(s_node.$el, pos )
+            range.setStart(s_node.$el, pos)
+            sel = window.getSelection()
+            sel.removeAllRanges()
+            sel.addRange(range)
+
+        },
         clear_select_node: function() {
             window.shift_arrow_count = 0
             this.clear_select_node_style()
