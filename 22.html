@@ -180,7 +180,6 @@ window.shift_arrow_count = 0
 window.select_node = []
 window.arrow_up_down = 0 //1 上，-1下，0无方向
 window.pos_node = '' //定位节点
-    //window.pos_node_index=-1 //用户确定选中多个节点拖动时原始节点的位置
 var TreeNode = Vue.extend({
     data: function() {
         return {
@@ -199,8 +198,9 @@ var TreeNode = Vue.extend({
         },
         handleInput: function(e) {
             /*var re=/(^\s*)|(\s*$)/g*/
+
             var newstring = e.target.innerText
-            this.node.name = newstring
+            this.node.name = newstring.trim()
         },
         handleDrop: function(e) {
             window.pos_node = this //拖动定位
@@ -324,12 +324,10 @@ var TreeNode = Vue.extend({
             this.addNode(newnode)
         },
         removeNode: function() {
-            if (confirm('Do you want to remove node: ' + this.node.name)) {
                 var current_node = this.node;
                 this.$parent.node.children = this.$parent.node.children.filter(function(node) {
                     return node !== current_node;
                 });
-            }
         },
 
         editNode: function() {
@@ -396,7 +394,7 @@ var TreeNode = Vue.extend({
                 return
             }
 
-            function getParent(p_node) {
+            function getParent(p_node) {  //为了能回溯父节点
                 if (p_node.node == undefined) {
                     return ddd
                 }
@@ -463,6 +461,16 @@ var TreeNode = Vue.extend({
                 return
             }
 
+            if (e.keyCode == 8) { //Backspace
+                /*e.preventDefault()*/
+                var pos = getCaretPosition(this.$el)
+                if (pos == 1&&(this.node.name.length==0)) { //在头部Backspace
+                    this.removeNode()
+                    return
+                }
+                console.log("Backspace")
+                return
+            }
             if (e.keyCode == 9) { //tab
                 e.preventDefault()
                 this.nodeDown()
@@ -470,17 +478,13 @@ var TreeNode = Vue.extend({
             }
 
             if (e.keyCode == 13) { //enter
-
                 e.preventDefault()
                 var pos = getCaretPosition(this.$el)
                 var nodelen = this.node.name.length
-                console.log(nodelen, pos)
-
                 if (pos == 1) { //在头部回车
                     this.addNodeUp()
                     return
                 }
-
                 if (pos > 1 && pos <= nodelen) { //在中间回车
                     console.log("mid")
                     this.addNodeMid(pos)
