@@ -179,7 +179,8 @@ var getCaretPosition = function(oField) {
 window.shift_arrow_count = 0
 window.select_node = []
 window.arrow_up_down = 0 //1 上，-1下，0无方向
-window.pos_node=''定位节点
+window.pos_node='' //定位节点
+//window.pos_node_index=-1 //用户确定选中多个节点拖动时原始节点的位置
 var TreeNode = Vue.extend({
     data: function() {
         return {
@@ -205,22 +206,16 @@ var TreeNode = Vue.extend({
             window.pos_node=this  //拖动定位
             if (window.select_node.length > 0) { //可能有多个
                 for (i = 0; i < window.select_node.length; i++) {
-                    if (i == 0) {
-                        this.handleDrop_fun(e, this, window.select_node[0], 1)
-                    } else {
-                        this.handleDrop_fun(e, window.select_node[i - 1], window.select_node[i], 1)
-                    }
+                    this.handleDrop_fun(e,window.pos_node,window.select_node[i],i)  //事件,定位节点，被移动节点，移动节点序号
                 }
                 this.clear_select_node()
                 return
             }
-            this.handleDrop_fun(e)
+            this.handleDrop_fun(e,this,window.__drop_node__,0)
             this.clear_select_node()
         },
-        handleDrop_fun: function(e) {
-            var el_node = arguments[1] ? arguments[1] : this //拖动到的目标元素
-            var vm = arguments[2] ? arguments[2] : window.__drop_node__ //被拖动元素
-            var mult = arguments[3] ? arguments[3] : 0
+        handleDrop_fun: function(e,el_node,vm,mult) {
+            console.log(mult)
             el_node.$el.children[0].classList.remove('drag_targ')
             vm.$el.children[0].classList.remove('drag_targ')
             var __parent__ = el_node;
@@ -234,20 +229,23 @@ var TreeNode = Vue.extend({
             vm.$parent.node.children = vm.$parent.node.children.filter(function(node) {
                     return node !== current_node
                 })
-                //多个元素
-            if (mult > 0) {
-                var index = el_node.$parent.node.children.indexOf(el_node.node) + 1
+
+            
+            //if (mult >= 0) {
+                var index = el_node.$parent.node.children.indexOf(el_node.node) + 1 + mult
                 el_node.$parent.node.children.splice(index, 0, current_node)
                 return
-            }
-
+            //}
+            
             //单个元素
-            if (el_node.node.children.length > 0) {
+          /*  if (el_node.node.children.length > 0) {
+                console.log("有子节点")
                 el_node.node.children.unshift(current_node)
             } else { //无子节点
+                console.log("无子节点")
                 var index = el_node.$parent.node.children.indexOf(el_node.node) + 1
                 el_node.$parent.node.children.splice(index, 0, current_node)
-            }
+            }*/
         },
         handleDragEnd: function(e) {
             //this.$el.style.backgroundColor = ''
