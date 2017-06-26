@@ -66,9 +66,10 @@
     }
     
     .kaitou {
+        /*小圆点那个*/
         position: absolute;
         left: 0px;
-        top: 6px;
+        top: 3px;
         margin: auto, 0;
         display: block;
         border: 1px solid #a1a1a1;
@@ -76,8 +77,19 @@
         height: 5px;
         -webkit-border-radius: 50%;
         -moz-border-radius: 50%;
-        border-radius: 50%;
+        /*border-radius: 50%;*/
         cursor: pointer;
+    }
+    
+    .kaitou_jia {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        margin: 0, 0, 0, 0;
+        padding: 0;
+        display: block;
+        cursor: pointer;
+        font-size: 80%;
     }
     
     .zhongjian {
@@ -85,7 +97,7 @@
         position: relative;
         left: 12px;
         font-size: 14px;
-        width: inherit;
+        /*width: inherit;*/
     }
     
     .node-title {
@@ -128,15 +140,16 @@
         <!-- 标题 -->
         <div class='node-content' v-if="node.isRoot==true">
             <div class="node-title">
-                <div contenteditable v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)">
+                <div contenteditable v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)'>
                     {{ node.name}}</div>
             </div>
         </div>
         <!-- 正文 -->
         <div class='node-content' v-else>
-            <div class="kaitou"></div>
+            <div class="kaitou_jia" @click.stop="handeClick($event)" v-if="node.children.length>0">-</div>
+            <div class="kaitou_jia" @click.stop="handeClick($event)" v-else>o</div>
             <div class="zhongjian">
-                <div contenteditable v-model="node.name" class='myinput' v-text="node.name" @input="handleInput($event)" @keydown.stop='handleKeyDown($event)' @click.stop="handeClick($event)"> </div>
+                <div contenteditable v-model="node.name" class='myinput' v-text="node.name" @input="handleInput($event)" @keydown.stop='handleKeyDown($event)'> </div>
             </div>
         </div>
         <!-- 针对标题层下的层调整格式 -->
@@ -193,6 +206,7 @@ var TreeNode = Vue.extend({
     template: '#tree-node-tpl',
     methods: {
         handeClick: function(e) {
+            console.log(this)
             this.clear_select_node()
                 /*this.$el.style.backgroundColor='grey'*/
         },
@@ -467,10 +481,12 @@ var TreeNode = Vue.extend({
                 return
             }
 
-            if (e.keyCode == 8) { //Backspace
-                var pos = getCaretPosition(this.$el)
+            if (e.keyCode == 8) { //Backspace  删除键
+
                 var t_node = ''
-                if (pos == 1 && (this.node.name.length == 0)&&this.node.children.length == 0) { //在头部Backspace
+                    //var pos = getCaretPosition(this.$el)
+                    //if (pos == 1 && (this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
+                if ((this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
                     //找到光标停留的节点，先是兄节点、在是父节点，一直向上
                     var index = this.$parent.node.children.indexOf(this.node)
                     console.log(index)
