@@ -55,8 +55,8 @@
     
     .node-children {
         border-left: 1px solid #00aaff;
-        margin-left: 5px;
-        padding-left: 15px;
+        margin-left: 4px;
+        padding-left: 20px;
         padding-bottom: 4px;
     }
     
@@ -89,7 +89,7 @@
         padding: 0;
         display: block;
         cursor: pointer;
-        font-size: 80%;
+        font-size: 90%;
     }
     
     .zhongjian {
@@ -207,6 +207,17 @@ var TreeNode = Vue.extend({
     methods: {
         handeClick: function(e) {
             console.log(this)
+            var show_or_not = this.$el.childNodes[0].childNodes[0]
+            if (this.node.children.length > 0) {
+                show_or_not.innerText == "-" ? show_or_not.innerText = "+" : show_or_not.innerText = "-"
+            }
+            if (show_or_not.innerText == "-") {
+                //展开
+                this.$el.childNodes[2].style.display = 'block'
+            } else if (show_or_not.innerText == "+") {
+                //折叠
+                this.$el.childNodes[2].style.display = 'none'
+            } 
             this.clear_select_node()
                 /*this.$el.style.backgroundColor='grey'*/
         },
