@@ -348,9 +348,9 @@ var TreeNode = Vue.extend({
             }
             this.addNode(newnode)
         },
-        removeNode: function() {
-            var current_node = this.node;
-            this.$parent.node.children = this.$parent.node.children.filter(function(node) {
+        removeNode: function(t_node) {
+            var current_node = t_node.node;
+            t_node.$parent.node.children = t_node.$parent.node.children.filter(function(node) {
                 return node !== current_node;
             });
         },
@@ -469,6 +469,46 @@ var TreeNode = Vue.extend({
                 } //选择节点数组不为空
                 return
             }
+
+            if (e.keyCode == 8) { //Backspace  删除键
+                //删除选中的节点
+                console.log(window.select_node.length)
+                if(window.select_node.length>0){
+                    
+                    this.clear_select_node_style()
+                    for(var i=0;i<window.select_node.length;i++){
+                        console.log(window.select_node[i].node.name)
+                        this.removeNode(window.select_node[i])
+                    }
+                    return
+                }
+                this.clear_select_node()
+                var t_node = ''
+                    //var pos = getCaretPosition(this.$el)
+                    //if (pos == 1 && (this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
+                if ((this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
+                    //找到光标停留的节点，先是兄节点、在是父节点，一直向上
+                    var index = this.$parent.node.children.indexOf(this.node)
+                    console.log(index)
+                    if (index > 0) { //有兄节点
+                        //到达节点的最末端（最后的子节点）
+                        t_node = getLastChildren(this.$parent.$children[index - 1])
+                    } else { //无兄节点，且父节点不是根节点
+                        if (this.$parent.node.isRoot != true) { //没有
+                            t_node = this.$parent
+                        } else {
+                            this.removeNode(this)
+                            return
+                        }
+                    }
+                    this.setfocus(t_node)
+                    this.setCaret(t_node)
+                    e.preventDefault() //取消默认事件
+                    this.removeNode(this)
+                }
+                return
+            }
+
             this.clear_select_node()
             if (e.keyCode == 9 && e.shiftKey) { //shift+tab
                 e.preventDefault() //取消默认事件
@@ -492,33 +532,7 @@ var TreeNode = Vue.extend({
                 return
             }
 
-            if (e.keyCode == 8) { //Backspace  删除键
-
-                var t_node = ''
-                    //var pos = getCaretPosition(this.$el)
-                    //if (pos == 1 && (this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
-                if ((this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
-                    //找到光标停留的节点，先是兄节点、在是父节点，一直向上
-                    var index = this.$parent.node.children.indexOf(this.node)
-                    console.log(index)
-                    if (index > 0) { //有兄节点
-                        //到达节点的最末端（最后的子节点）
-                        t_node = getLastChildren(this.$parent.$children[index - 1])
-                    } else { //无兄节点，且父节点不是根节点
-                        if (this.$parent.node.isRoot != true) { //没有
-                            t_node = this.$parent
-                        } else {
-                            this.removeNode()
-                            return
-                        }
-                    }
-                    this.setfocus(t_node)
-                    this.setCaret(t_node)
-                    e.preventDefault() //取消默认事件
-                    this.removeNode()
-                }
-                return
-            }
+            
 
             if (e.keyCode == 9) { //tab
                 e.preventDefault()
