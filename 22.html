@@ -149,7 +149,7 @@
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-if="node.children.length>0">-</div>
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-else>o</div>
             <div class="zhongjian">
-                <div contenteditable v-model="node.name" class='myinput' v-text="node.name" @input="handleInput($event)" @keydown.stop='handleKeyDown($event)'> </div>
+                <div contenteditable v-model="node.name" class='myinput' v-text="node.name" @input="handleInput($event)" @keydown.stop='handleKeyDown($event)' @focus='handleFocus($event)'> </div>
             </div>
         </div>
         <!-- 针对标题层下的层调整格式 -->
@@ -220,6 +220,9 @@ var TreeNode = Vue.extend({
             }
             this.clear_select_node()
                 /*this.$el.style.backgroundColor='grey'*/
+        },
+        handleFocus:function(e){
+            console.log(this.node.name)
         },
         handleInput: function(e) {
             /*var re=/(^\s*)|(\s*$)/g*/
