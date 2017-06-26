@@ -408,6 +408,13 @@ var TreeNode = Vue.extend({
                 return getParent(pp_node)
             }
 
+            function getLastChildren(s_node) {
+                if (s_node.node.children.length == 0) { //没有子节点
+                    return s_node
+                } else { //有子节点
+                    return getLastChildren(s_node.$children[s_node.node.children.length - 1])
+                }
+            }
             if (e.keyCode == 40 && e.shiftKey) { //shift+arrowDown按键向上
                 if (window.select_node.length == 0) { //选择节点数组为空
                     window.arrow_up_down = -1 //方向向下
@@ -424,7 +431,6 @@ var TreeNode = Vue.extend({
                             window.select_node.push(p_node.$children[index + 1])
                         } else { //选择节点数组最末节点的父节点的弟节点
                             var ddd = getParent(p_node)
-                            console.log("getParent  ", ddd)
                             if (ddd != undefined) {
                                 ddd.$el.classList.add('select_style')
                                 window.select_node.push(ddd)
@@ -462,33 +468,27 @@ var TreeNode = Vue.extend({
             }
 
             if (e.keyCode == 8) { //Backspace
-
-                function getLastChildren(s_node) {
-                    if (s_node.node.children.length == 0) { //没有子节点
-                        return s_node
-                    } else { //有子节点
-                        return getLastChildren(s_node.$children[s_node.node.children.length - 1])
-                    }
-                }
-
                 var pos = getCaretPosition(this.$el)
-                if (pos == 1 && (this.node.name.length == 0)) { //在头部Backspace
+                var t_node = ''
+                if (pos == 1 && (this.node.name.length == 0)&&this.node.children.length == 0) { //在头部Backspace
                     //找到光标停留的节点，先是兄节点、在是父节点，一直向上
                     var index = this.$parent.node.children.indexOf(this.node)
+                    console.log(index)
                     if (index > 0) { //有兄节点
                         //到达节点的最末端（最后的子节点）
-                        var t_node = getLastChildren(this.$parent.$children[index - 1])
-                        this.setfocus(t_node)
-                        this.setCaret(t_node, t_node.node.name.length)
-
+                        t_node = getLastChildren(this.$parent.$children[index - 1])
+                    } else { //无兄节点，且父节点不是根节点
+                        if (this.$parent.node.isRoot != true) { //没有
+                            t_node = this.$parent
+                        } else {
+                            this.removeNode()
+                            return
+                        }
                     }
-                    //到达节点的最末端（最后的子节点）
-                    //设置光标停留
-                    //没有兄，找父节点，
-                    //如果父节点是顶级节点，设置第一个节点光标位置
-                    //如果父节点不是顶级节点，找到最末端，设置光标
-                    //设置光标停留
-                    if (this.node.children.length == 0) this.removeNode()
+                    this.setfocus(t_node)
+                    this.setCaret(t_node)
+                    e.preventDefault() //取消默认事件
+                    this.removeNode()
                 }
                 return
             }
@@ -562,16 +562,17 @@ var TreeNode = Vue.extend({
             }
         },
         ////////////////////////////////////////////////////////
-        setCaret: function(s_node, pos) {
+        setCaret: function(s_node) {
+            var mymy = s_node.$el.childNodes[0].childNodes[2].childNodes[0]
             range = document.createRange()
-            range.selectNodeContents(s_node.$el)
+            range.selectNodeContents(mymy)
+                //range.selectNode(mymy)  
             range.collapse(true)
-            range.setEnd(s_node.$el, pos )
-            range.setStart(s_node.$el, pos)
+            range.setStart(mymy, mymy.childNodes.length)
+            range.setEnd(mymy, mymy.childNodes.length)
             sel = window.getSelection()
             sel.removeAllRanges()
             sel.addRange(range)
-
         },
         clear_select_node: function() {
             window.shift_arrow_count = 0
