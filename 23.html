@@ -453,25 +453,28 @@
 
                 //向下移动选中内容
                 if (e.keyCode == 40 && e.shiftKey && e.ctrlKey) { //shift+ctrl+向下箭头
-                    console.log("shift+ctrl+向下箭头","选择数组长度:", window.select_node.length)
-                    console.log(window.select_node[0].node.name,window.select_node[1].node.name)
+                    console.log("shift+ctrl+向下箭头", "选择数组长度:", window.select_node.length)
                     if (window.select_node.length > 0) {
-                        var p_node = window.select_node[window.select_node.length-1].$parent
-                        var index = p_node.node.children.indexOf(window.select_node[window.select_node.length-1].node)
-                        console.log("shift+ctrl+向下箭头","父节点：",p_node.node.name,"在父节点位置:",index)
+                        var focus_node = window.select_node[0]
+                        var p_node = window.select_node[window.select_node.length - 1].$parent
+                        var index = p_node.node.children.indexOf(window.select_node[window.select_node.length - 1].node)
+                        console.log("shift+ctrl+向下箭头", "父节点：", p_node.node.name, "当前节点在父节点位置:", index)
                         if (index < p_node.node.children.length - 1) { //有弟节点存在,移动成为弟节点的弟节点（不要移动成为弟节点的子节点）
                             var s_node = p_node.$children[index + 1]
                             for (var i = 0; i < window.select_node.length; i++) {
                                 this.handleDrop_fun(e, s_node, window.select_node[i], i, 1)
                             }
-                        } else {
+                        } else { 
                             for (var i = 0; i < window.select_node.length; i++) {
                                 this.handleDrop_fun(e, p_node, window.select_node[i], i, 1)
                             }
                         }
-                        //无弟节点，移动成为父节点的弟节点的弟节点。
+                        console.log("shift+ctrl+向下箭头","设置焦点节点：",focus_node.node.name)
+                        //this.setfocus(focus_node)
+                        this.clear_select_node()
+                        e.stopPropagation()
+                        e.preventDefault()
                     }
-                    this.clear_select_node()
                     return
                 }
 
@@ -479,6 +482,7 @@
                 if (e.keyCode == 38 && e.shiftKey && e.ctrlKey) { //shift+ctrl+向上箭头
                     //选中数组一个一个的移动
                     if (window.select_node.length > 0) {
+                        var focus_node = window.select_node[0]
                         var p_node = window.select_node[0].$parent
                         var index = p_node.node.children.indexOf(window.select_node[0].node)
                         if (index > 0) { //兄节点存在，
@@ -497,8 +501,12 @@
                                 this.handleDrop_fun(e, p_node, window.select_node[i], 0, -1)
                             }
                         }
+                        console.log("shift+ctrl+向上箭头","设置焦点节点：",focus_node.node.name)
+                        //this.setfocus(focus_node)
+                        this.clear_select_node()
+                        e.stopPropagation()
+                        e.preventDefault()
                     }
-                    this.clear_select_node()
                     return
                 }
                 if (e.keyCode == 38 && e.shiftKey) { //shift+上箭头
@@ -517,7 +525,7 @@
                             var p_node = window.select_node[0].$parent
                             var index = p_node.node.children.indexOf(window.select_node[0].node)
                             if (index > 0) { //有兄节点
-                                console.log("shift+上箭头", "有兄节点","父节点中的索引位置", index)
+                                console.log("shift+上箭头", "有兄节点", "父节点中的索引位置", index)
                                 this.add_selection_node(p_node.$children[index - 1], -1)
                                 p_node.$children[index - 1].$el.classList.add('select_style')
                                 //p_node.$children[index-1].$el.style.backgroundColor='grey'
@@ -553,18 +561,18 @@
                         window.select_node[0].$el.classList.add("select_style")
                     } else { //选择节点数组不为空
                         if (window.arrow_up_down == -1) { //选择方向向下
-                            console.log("shift+向下箭头","//选择方向向下")
+                            console.log("shift+向下箭头", "//选择方向向下")
                             //选择节点数组最末节点 的子节点
                             var p_node = window.select_node[window.select_node.length - 1].$parent
                             var index = p_node.node.children.indexOf(window.select_node[window.select_node.length - 1].node)
                             if (index < p_node.node.children.length - 1) { //有弟节点
-                            console.log("shift+向下箭头","//有弟节点")
+                                console.log("shift+向下箭头", "//有弟节点")
                                 p_node.$children[index + 1].$el.classList.add('select_style')
                                 this.add_selection_node(p_node.$children[index + 1], 1)
                                 //window.select_node.push(p_node.$children[index + 1])
                             } else { //选择节点数组最末节点的父节点的弟节点
                                 var ddd = getParent(p_node)
-                                if (ddd != undefined&&ddd.node.isRoot != true) {
+                                if (ddd != undefined && ddd.node.isRoot != true) {
                                     ddd.$el.classList.add('select_style')
                                     this.add_selection_node(ddd, 1)
                                     //window.select_node.push(ddd)
