@@ -136,8 +136,8 @@
     </div>
 </body>
 <template id="tree-node-tpl">
-    <div class="tree-line" draggable="true" @dragstart.stop="handleDragStart($event)" @drop.stop="handleDrop($event)" @dragenter.stop="handleDragEnter($event)"
-        @dragleave="handleDragLeave($event)" @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)">
+    <div class="tree-line" draggable="true" @dragstart.stop="handleDragStart($event)" @drop.stop="handleDrop($event)" @dragenter.stop="handleDragEnter($event)" @dragleave="handleDragLeave($event)"
+        @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)">
         <!-- 标题 -->
         <div class='node-content' v-if="node.isRoot==true">
             <div class="node-title">
@@ -150,8 +150,8 @@
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-if="node.children.length>0">-</div>
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-else>o</div>
             <div class="zhongjian">
-                <div contenteditable v-model="node.name" class='myinput' v-text="node.name" @input="handleInput($event)" @keydown.stop='handleKeyDown($event)'
-                    @focus='handleFocus($event)' @blur='handleBlur($event)'> </div>
+                <div contenteditable v-model="node.name" class='myinput' v-text="node.name" @input="handleInput($event)" @keydown.stop='handleKeyDown($event)' @focus='handleFocus($event)'
+                    @blur='handleBlur($event)'> </div>
             </div>
         </div>
         <!-- 针对标题层下的层调整格式 -->
@@ -237,12 +237,15 @@
                 /*this.$el.style.backgroundColor='grey'*/
             },
             handleFocus: function (e) {
-                console.log("handleFocus",window.select_node.length)
+                console.log("获得焦点：", this.node.name, "选择数组长度：", window.select_node.length)
                 this.clear_select_node()
                 this.set_Pre_action(this, FOCUS)
                 this.add_selection_node(this, -1) ////将自己加入选区,1 后面加，-1 前面加
+                console.log("添加节点：", this.node.name, "选择数组长度：", window.select_node.length)
+
             },
             handleBlur: function (e) {
+                console.log("失去焦点节点：", this.node.name)
                 this.clear_select_node()
                 if (window.pre_action.actionNode == this && window.pre_action.action == FOCUS) { //前一个动作节点是自己，动作是获得焦点
                     this.remove_selection_node(this)
@@ -450,10 +453,12 @@
 
                 //向下移动选中内容
                 if (e.keyCode == 40 && e.shiftKey && e.ctrlKey) { //shift+ctrl+向下箭头
-                    console.log("shift+ctrl+向下箭头", window.select_node.length)
+                    console.log("shift+ctrl+向下箭头","选择数组长度:", window.select_node.length)
+                    console.log(window.select_node[0].node.name,window.select_node[1].node.name)
                     if (window.select_node.length > 0) {
-                        var p_node = window.select_node[0].$parent
-                        var index = p_node.node.children.indexOf(window.select_node[0].node)
+                        var p_node = window.select_node[window.select_node.length-1].$parent
+                        var index = p_node.node.children.indexOf(window.select_node[window.select_node.length-1].node)
+                        console.log("shift+ctrl+向下箭头","父节点：",p_node.node.name,"在父节点位置:",index)
                         if (index < p_node.node.children.length - 1) { //有弟节点存在,移动成为弟节点的弟节点（不要移动成为弟节点的子节点）
                             var s_node = p_node.$children[index + 1]
                             for (var i = 0; i < window.select_node.length; i++) {
@@ -497,21 +502,28 @@
                     return
                 }
                 if (e.keyCode == 38 && e.shiftKey) { //shift+上箭头
+                    console.log("shift+向上箭头", "选择数组长度：" + window.select_node.length, "当前节点:", this.node.name)
                     if (window.select_node.length == 0) { //选择节点数组为空
-                        console.log("e.keyCode == 38 && e.shiftKey，window.select_node.length == 0")
                         window.arrow_up_down = 1 //方向向上
                         this.$el.classList.add('select_style')
                         window.select_node.unshift(this) //加入节点
                     } //选择节点数组为空
-                    else { //选择节点数组不空
+                    else if (this == window.select_node[0] && this.$el.classList[this.$el.classList.length - 1] !== "select_style") {
+                        console.log("当前节点在选择数组中", "没有显示选中状态", "设置选中状态")
+                        window.arrow_up_down = 1
+                        window.select_node[0].$el.classList.add("select_style")
+                    } else { //选择节点数组不空
                         if (window.arrow_up_down == 1) { //选择方向向上  按键向上，增加内容
                             var p_node = window.select_node[0].$parent
                             var index = p_node.node.children.indexOf(window.select_node[0].node)
                             if (index > 0) { //有兄节点
+                                console.log("shift+上箭头", "有兄节点","父节点中的索引位置", index)
                                 this.add_selection_node(p_node.$children[index - 1], -1)
                                 p_node.$children[index - 1].$el.classList.add('select_style')
                                 //p_node.$children[index-1].$el.style.backgroundColor='grey'
                             } else { //无兄节点  获得祖辈节点
+                                console.log("shift+上箭头", "无兄节点")
+                                console.log("p_node.node.isRoot=", p_node.node.isRoot)
                                 if (p_node.node.isRoot != true) { //父节点非根节点
                                     this.clear_select_node_style() //先是选中元素取消选中模式
                                     window.select_node.splice(0, window.select_node.length)
@@ -521,36 +533,38 @@
                                     p_node.$el.classList.add('select_style')
                                 }
                             }
-                        } //选择方向向上
-                        else { //选择方向向下  按键向上，删除内容
+                        } else { //选择方向向下  按键向上，删除内容
                             var dd = window.select_node.pop() //弹出最后一个元素
                             dd.$el.classList.remove('select_style') //删除选中样式
-                        } //选择方向向下
-                    } //选择节点数组不空    
+                        }
+                    }
                     return
                 }
-
-
                 if (e.keyCode == 40 && e.shiftKey) { //shift+arrowDown按键向下
-
+                    console.log("shift+向下箭头", "选择数组长度：" + window.select_node.length)
                     if (window.select_node.length == 0) { //选择节点数组为空
                         window.arrow_up_down = -1 //方向向下
                         this.$el.classList.add('select_style')
                         window.select_node.push(this) //加入节点
                     } //选择节点数组为空
-                    else { //选择节点数组不为空
+                    else if (this == window.select_node[0] && this.$el.classList[this.$el.classList.length - 1] !== "select_style") {
+                        console.log("当前节点在选择数组中", "没有显示选中状态", "设置选中状态")
+                        window.arrow_up_down = -1
+                        window.select_node[0].$el.classList.add("select_style")
+                    } else { //选择节点数组不为空
                         if (window.arrow_up_down == -1) { //选择方向向下
+                            console.log("shift+向下箭头","//选择方向向下")
                             //选择节点数组最末节点 的子节点
                             var p_node = window.select_node[window.select_node.length - 1].$parent
-                            var index = p_node.node.children.indexOf(window.select_node[window.select_node.length -
-                                1].node)
+                            var index = p_node.node.children.indexOf(window.select_node[window.select_node.length - 1].node)
                             if (index < p_node.node.children.length - 1) { //有弟节点
+                            console.log("shift+向下箭头","//有弟节点")
                                 p_node.$children[index + 1].$el.classList.add('select_style')
                                 this.add_selection_node(p_node.$children[index + 1], 1)
                                 //window.select_node.push(p_node.$children[index + 1])
                             } else { //选择节点数组最末节点的父节点的弟节点
                                 var ddd = getParent(p_node)
-                                if (ddd != undefined) {
+                                if (ddd != undefined&&ddd.node.isRoot != true) {
                                     ddd.$el.classList.add('select_style')
                                     this.add_selection_node(ddd, 1)
                                     //window.select_node.push(ddd)
@@ -626,8 +640,7 @@
                     }
                     return
                 }
-
-
+                console.log("清除选择节点及样式")
                 this.clear_select_node()
 
                 if (e.keyCode == 9) { //tab
