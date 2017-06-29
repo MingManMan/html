@@ -1,3 +1,26 @@
 {
-	"bookmarks": []
+	"bookmarks": [
+		{
+			"fsPath": "$ROOTPATH$\\22.html",
+			"bookmarks": [
+				208,
+				247,
+				423
+			]
+		},
+		{
+			"fsPath": "$ROOTPATH$\\23.html",
+			"bookmarks": [
+				454
+			]
+		},
+		{
+			"fsPath": "$ROOTPATH$\\24.html",
+			"bookmarks": [
+				272,
+				532,
+				763
+			]
+		}
+	]
 }

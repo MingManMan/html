@@ -273,6 +273,7 @@
             handleDrop_fun: function (e, el_node, vm, mult, up_or_down) { //事件,定位节点，被移动节点，移动节点序号,目标节点的上方还是下方（1下，-1上
                 el_node.$el.children[0].classList.remove('drag_targ')
                 vm.$el.children[0].classList.remove('drag_targ')
+
                 var __parent__ = el_node;
                 while (__parent__ !== undefined) {
                     if (__parent__ === vm) {
@@ -281,17 +282,20 @@
                     __parent__ = __parent__.$parent;
                 }
                 var current_node = vm.node;
+                var current_el = ''
                 vm.$parent.node.children = vm.$parent.node.children.filter(function (node) {
                     return node !== current_node
                 })
                 if (up_or_down == 1) {
                     var index = el_node.$parent.node.children.indexOf(el_node.node) + 1 + mult
                     el_node.$parent.node.children.splice(index, 0, current_node)
+                    current_el = index
                 } else if (up_or_down == -1) {
                     var index = el_node.$parent.node.children.indexOf(el_node.node)
                     el_node.$parent.node.children.splice(index, 0, current_node)
+                    current_el = index
                 }
-                return
+                return current_el
             },
             handleDragEnd: function (e) {
                 //this.$el.style.backgroundColor = ''
@@ -456,25 +460,32 @@
                     console.log("shift+ctrl+向下箭头", "选择数组长度:", window.select_node.length)
                     if (window.select_node.length > 0) {
                         var focus_node = window.select_node[0]
+                        var focus_node_index = -1
                         var p_node = window.select_node[window.select_node.length - 1].$parent
                         var index = p_node.node.children.indexOf(window.select_node[window.select_node.length - 1].node)
                         console.log("shift+ctrl+向下箭头", "父节点：", p_node.node.name, "当前节点在父节点位置:", index)
                         if (index < p_node.node.children.length - 1) { //有弟节点存在,移动成为弟节点的弟节点（不要移动成为弟节点的子节点）
                             var s_node = p_node.$children[index + 1]
+                            focus_node = s_node
                             for (var i = 0; i < window.select_node.length; i++) {
-                                this.handleDrop_fun(e, s_node, window.select_node[i], i, 1)
+                                focus_node_index = this.handleDrop_fun(e, s_node, window.select_node[i], i, 1)
+
                             }
-                        } else { 
+                        } else {
+                            focus_node = p_node
                             for (var i = 0; i < window.select_node.length; i++) {
-                                this.handleDrop_fun(e, p_node, window.select_node[i], i, 1)
+                                focus_node_index = this.handleDrop_fun(e, p_node, window.select_node[i], i, 1)
                             }
                         }
-                        console.log("shift+ctrl+向下箭头","设置焦点节点：",focus_node.node.name)
-                        //this.setfocus(focus_node)
-                        //this.clear_select_node()
-                        sel = window.getSelection()
-                        console.log(sel)
-                        
+                        this.$nextTick(function () {
+                            index = focus_node.$parent.node.children.indexOf(focus_node.node)
+                            console.log("shift+ctrl+向下箭头", "定位节点中的位置：", focus_node_index, "焦点定位节点：", focus_node)
+                            console.log("shift+ctrl+向下箭头", "定位节点位置确定", index, "定位节点父节点的子元素个数", focus_node.$parent.$children.length)
+                            console.log("shift+ctrl+向下箭头", "设置焦点：", focus_node.$parent.$children[focus_node_index])
+                            this.setfocus(focus_node.$parent.$children[focus_node_index])
+                        })
+                        e.preventDefault()
+                        e.stopPropagation()
                     }
                     return
                 }
@@ -483,34 +494,46 @@
                 if (e.keyCode == 38 && e.shiftKey && e.ctrlKey) { //shift+ctrl+向上箭头
                     //选中数组一个一个的移动
                     if (window.select_node.length > 0) {
+
                         var focus_node = window.select_node[0]
+                        var focus_node_index = -1
                         var p_node = window.select_node[0].$parent
                         var index = p_node.node.children.indexOf(window.select_node[0].node)
                         if (index > 0) { //兄节点存在，
                             var s_node = getLastChildren(p_node.$children[index - 1])
+                            focus_node=s_node
                             if (p_node.$children[index - 1] == s_node) { //兄节点存在，且兄节点无子节点，移动到兄节点的前端
                                 for (var i = 0; i < window.select_node.length; i++) {
-                                    this.handleDrop_fun(e, s_node, window.select_node[i], 0, -1)
+                                    focus_node_index=this.handleDrop_fun(e, s_node, window.select_node[i], 0, -1)
                                 }
                             } else { //兄节点存在,且兄节点有子节点，移动当前节点到兄节点的最末端
                                 for (var i = 0; i < window.select_node.length; i++) {
-                                    this.handleDrop_fun(e, s_node, window.select_node[i], i, 1)
+                                   focus_node_index= this.handleDrop_fun(e, s_node, window.select_node[i], i, 1)
                                 }
                             }
-                        } else { //兄节点不存在，移动到父节点的前端
+                        } else {  //兄节点不存在，移动到父节点的前端
+                         focus_node=p_node
                             for (var i = 0; i < window.select_node.length; i++) {
-                                this.handleDrop_fun(e, p_node, window.select_node[i], 0, -1)
+                               focus_node_index= this.handleDrop_fun(e, p_node, window.select_node[i], 0, -1)
                             }
                         }
-                        console.log("shift+ctrl+向上箭头","设置焦点节点：",focus_node.node.name)
+
+                        console.log("shift+ctrl+向上箭头", "设置焦点节点：", focus_node.node.name)
                         //this.setfocus(focus_node)
                         //this.clear_select_node()
-                        
+                        this.$nextTick(function () {
+                            index = focus_node.$parent.node.children.indexOf(focus_node.node)
+                            console.log("shift+ctrl+向下箭头", "定位节点中的位置：", focus_node_index, "焦点定位节点：", focus_node)
+                            console.log("shift+ctrl+向下箭头", "定位节点位置确定", index, "定位节点父节点的子元素个数", focus_node.$parent.$children.length)
+                            console.log("shift+ctrl+向下箭头", "设置焦点：", focus_node.$parent.$children[focus_node_index])
+                            this.setfocus(focus_node.$parent.$children[focus_node_index])
+                        })
+                        e.preventDefault()
+                        e.stopPropagation()
                     }
                     return
                 }
                 if (e.keyCode == 38 && e.shiftKey) { //shift+上箭头
-                    console.log("shift+向上箭头", "选择数组长度：" + window.select_node.length, "当前节点:", this.node.name)
                     if (window.select_node.length == 0) { //选择节点数组为空
                         window.arrow_up_down = 1 //方向向上
                         this.$el.classList.add('select_style')
@@ -744,15 +767,27 @@
             setCaret: function (s_node) {
                 var mymy = s_node.$el.childNodes[0].childNodes[2].childNodes[0]
                 range = document.createRange()
-                range.selectNodeContents(mymy)
-                //range.selectNode(mymy)  
+                //range.selectNodeContents(mymy)
+                range.selectNode(mymy)
                 range.collapse(true)
                 range.setStart(mymy, mymy.childNodes.length)
                 range.setEnd(mymy, mymy.childNodes.length)
+                range.select()
                 sel = window.getSelection()
                 sel.removeAllRanges()
                 sel.addRange(range)
             },
+            setCaretPro: function (s_node, start, end) {
+                range = document.createRange()
+                range.selectNode(s_node)
+                range.collapse(true)
+                range.setStart(s_node, start)
+                range.setEnd(s_node, end)
+                sel = window.getSelection()
+                sel.removeAllRanges()
+                sel.addRange(range)
+            },
+
             clear_select_node: function () {
                 window.shift_arrow_count = 0
                 this.clear_select_node_style()
