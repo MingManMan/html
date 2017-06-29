@@ -136,17 +136,18 @@
     </div>
 </body>
 <template id="tree-node-tpl">
-    <div class="tree-line" draggable="true" @dragstart.stop="handleDragStart($event)" @drop.stop="handleDrop($event)" @dragenter.stop="handleDragEnter($event)" @dragleave="handleDragLeave($event)"
-        @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)">
+    <div draggable="false" class="tree-line" draggable="true" @dragstart.stop="handleDragStart($event)" @drop.stop="handleDrop($event)" @dragenter.stop="handleDragEnter($event)"
+        @dragleave="handleDragLeave($event)" @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)" 
+        @mousedown.stop.prevent="handleMouseDown($event)" @mouseover.stop.prevent="handleMouseOver($event)" >
         <!-- 标题 -->
-        <div class='node-content' v-if="node.isRoot==true">
+        <div class='node-content' v-if="node.isRoot==true" draggable="false">
             <div class="node-title">
                 <div contenteditable v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)'>
                     {{ node.name}}</div>
             </div>
         </div>
         <!-- 正文 -->
-        <div class='node-content' v-else>
+        <div class='node-content' v-else draggable="false"  >
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-if="node.children.length>0">-</div>
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-else>o</div>
             <div class="zhongjian">
@@ -220,6 +221,14 @@
         template: '#tree-node-tpl',
         methods: {
 
+            handleMouseOver: function (e) {
+                console.log("鼠标经过","按键:",e.button)
+            },
+            handleMouseDown: function (e) {
+                var button = e.button
+                console.log("鼠标按下", "按下：", button)
+            },
+
             handeClick: function (e) {
                 var show_or_not = this.$el.childNodes[0].childNodes[0]
                 if (this.node.children.length > 0) {
@@ -251,7 +260,6 @@
                     this.remove_selection_node(this)
                 }
                 this.set_Pre_action(this, BLUR)
-
             },
             handleInput: function (e) {
                 /*var re=/(^\s*)|(\s*$)/g*/
@@ -304,7 +312,7 @@
                 this.is_draged = false
             },
             handleDragStart: function (e) {
-                console.log("handleDragStart","节点是：",this)
+                console.log("handleDragStart", "节点是：", this)
                 this.show = false
                 this.is_draged = true
                 window.__drop_node__ = this
@@ -502,20 +510,20 @@
                         var index = p_node.node.children.indexOf(window.select_node[0].node)
                         if (index > 0) { //兄节点存在，
                             var s_node = getLastChildren(p_node.$children[index - 1])
-                            focus_node=s_node
+                            focus_node = s_node
                             if (p_node.$children[index - 1] == s_node) { //兄节点存在，且兄节点无子节点，移动到兄节点的前端
                                 for (var i = 0; i < window.select_node.length; i++) {
-                                    focus_node_index=this.handleDrop_fun(e, s_node, window.select_node[i], 0, -1)
+                                    focus_node_index = this.handleDrop_fun(e, s_node, window.select_node[i], 0, -1)
                                 }
                             } else { //兄节点存在,且兄节点有子节点，移动当前节点到兄节点的最末端
                                 for (var i = 0; i < window.select_node.length; i++) {
-                                   focus_node_index= this.handleDrop_fun(e, s_node, window.select_node[i], i, 1)
+                                    focus_node_index = this.handleDrop_fun(e, s_node, window.select_node[i], i, 1)
                                 }
                             }
-                        } else {  //兄节点不存在，移动到父节点的前端
-                         focus_node=p_node
+                        } else { //兄节点不存在，移动到父节点的前端
+                            focus_node = p_node
                             for (var i = 0; i < window.select_node.length; i++) {
-                               focus_node_index= this.handleDrop_fun(e, p_node, window.select_node[i], 0, -1)
+                                focus_node_index = this.handleDrop_fun(e, p_node, window.select_node[i], 0, -1)
                             }
                         }
 
