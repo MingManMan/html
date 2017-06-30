@@ -81,6 +81,15 @@
             cursor: pointer;
         }
 
+        .content-hot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 770px;
+            height: 100%;
+            cursor: default;
+        }
+
         .kaitou_jia {
             position: absolute;
             left: 0px;
@@ -148,6 +157,7 @@
         </div>
         <!-- 正文 -->
         <div class='node-content' v-else draggable="false">
+            <div class="content-hot"></div>
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-if="node.children.length>0">-</div>
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-else>o</div>
             <div class="zhongjian">
@@ -207,7 +217,7 @@
     window.mouse_dir = 0 //1 上，-1下，0无方向
     window.mouse_start = '' //记录起始节点
     window.mouse_pre = '' //上个经过的节点
-    window.mouse_pre_Y=0 //上次经过节点时的Y坐标
+    window.mouse_pre_Y = 0 //上次经过节点时的Y坐标
 
     window.pre_action = {
         actionNode: "",
@@ -235,25 +245,25 @@
                 console.log("鼠标弹起", "选择数组长度", window.select_node.length)
                 window.mouse_state = NOTHING //什么键都没有
                 window.mouse_Y = 0
-                window.mouse_pre_Y=0
+                window.mouse_pre_Y = 0
                 window.mouse_dir = 0
                 window.mouse_start = ''
                 window.mouse_pre = ''
             },
             handleMouseOver: function (e) {
                 if (window.mouse_state == MOUSE_L_KEY_DOWN) { //当前是按着左键的移动
-                    console.log("鼠标经过", "经过节点:", this.node.name, "鼠标事件:", e.screenY,"鼠标标志：",window.mouse_state)
-                    
+                    console.log("鼠标经过", "经过节点:", this.node.name, "鼠标事件:", e.screenY, "鼠标标志：", window.mouse_state)
+
                     if (window.mouse_start == this) { //回到起始节点，方向清零
                         console.log("鼠标经过", "回到起始节点", this.node.name)
                         window.mouse_Y = e.screenY
-                        window.mouse_pre_Y=e.screenY
+                        window.mouse_pre_Y = e.screenY
                         window.mouse_pre = this
                         window.mouse_dir = 0
                         return
                     }
 
-                    if (window.mouse_dir == 0) { //未判明方向
+                    if (window.mouse_dir == 0) { //判断目前鼠标的移动方向
                         var ddd = e.screenY - window.mouse_Y
                         if (ddd > 0) { //向下
                             console.log("鼠标经过", "方向:下")
@@ -266,17 +276,18 @@
 
                     if (window.mouse_pre != this) { //上次事件触发和本次事件触发不是同一个节点
                         //判断当前鼠标移动趋势
-                        var ddd=(e.screenY-window.mouse_pre_Y)>0?-1:1  //大于0 向下，小于0 向上
-                                                
-                        if(ddd==window.mouse_dir){//如果鼠标移动大趋势和当前趋势一致，增加选中节点
+                        var ddd = (e.screenY - window.mouse_pre_Y) > 0 ? -1 : 1 //大于0 向下，小于0 向上
+
+                        if (ddd == window.mouse_dir) { //如果鼠标移动大趋势（window.mouse_dir），和当前趋势一致，增加选中节点
                             //已经添加，不添加
-                            //如果当前节点是
-                        }
-                        
-                        else{//如果鼠标移动大趋势和当前趋势不一致，减少选中节点
+                            //如果当前节点是父元在添加列表，不添加
+                            //如果是向上，添加到前端
+                            //
+                            //如果是向下，添加到末端
+                        } else { //如果鼠标移动大趋势和当前趋势不一致，减少选中节点
 
                         }
-                        
+
                     }
 
 
@@ -288,7 +299,7 @@
                 if (button == 0) {
                     window.mouse_state = MOUSE_L_KEY_DOWN //按下了鼠标左键
                     window.mouse_Y = e.screenY
-                    window.mouse_pre_Y=e.screenY
+                    window.mouse_pre_Y = e.screenY
                     window.mouse_start = this
                     window.mouse_pre = this
                 }
