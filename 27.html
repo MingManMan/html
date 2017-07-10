@@ -9,11 +9,11 @@
         .totle {
             background: #f2f2f2;
         }
-        
+
         div {
             display: block;
         }
-        
+
         .paper {
             /*整个树*/
             margin: 30px auto 20px;
@@ -27,16 +27,16 @@
             -ms-user-select: none;
             user-select: none;
         }
-        
+
         .tree-line {
             cursor: text;
         }
-        
+
         .myinput {
             BACKGROUND-COLOR: transparent;
             border: none;
         }
-        
+
         .myinput_title {
             BACKGROUND-COLOR: transparent;
             margin: auto 0;
@@ -44,7 +44,7 @@
             padding-bottom: 10px;
             border: 0
         }
-        
+
         .node-first-children {
             position: relative;
             left: 0px;
@@ -52,19 +52,19 @@
             padding-left: 0px;
             padding-bottom: 4px;
         }
-        
+
         .node-children {
             border-left: 1px solid #00aaff;
             margin-left: 4px;
             padding-left: 20px;
             padding-bottom: 4px;
         }
-        
+
         .node-content {
             min-height: 20px;
             position: relative;
         }
-        
+
         .kaitou {
             /*小圆点那个*/
             position: absolute;
@@ -80,7 +80,7 @@
             /*border-radius: 50%;*/
             cursor: pointer;
         }
-        
+
         .kaitou_jia {
             position: absolute;
             left: 0px;
@@ -91,7 +91,7 @@
             cursor: pointer;
             font-size: 90%;
         }
-        
+
         .zhongjian {
             display: block;
             position: relative;
@@ -99,7 +99,7 @@
             font-size: 14px;
             /*width: inherit;*/
         }
-        
+
         .node-title {
             display: block;
             position: relative;
@@ -108,16 +108,16 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
         }
-        
+
         .select_style {
             background: #B1D7FE;
         }
-        
+
         .drag_targ {
             border-bottom-style: dotted;
             border-width: 1px;
         }
-        
+
         .drag_src {
             opacity: 0.9;
             color: red;
@@ -136,10 +136,10 @@
     </div>
 </body>
 <template id="tree-node-tpl">
-    <div class="tree-line" draggable="true" @dragstart.stop="handleDragStart($event)" @drop.stop="handleDrop($event)" @dragenter.stop="handleDragEnter($event)"
-        @dragleave="handleDragLeave($event)" @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)" @mousedown.stop="handleMouseDown($event)"
-        @mouseup.stop="handleMouseUp($event)" @mouseover.stop="handleMouseOver($event)">
-            <!-- 标题 -->
+    <div class="tree-line" draggable="false" @dragstart.stop="handleDragStart($event)" @drop.stop="handleDrop($event)" @dragenter.stop="handleDragEnter($event)" @dragleave="handleDragLeave($event)"
+        @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)" @mousedown.stop="handleMouseDown($event)" @mouseup.stop="handleMouseUp($event)"
+        @mouseover.stop="handleMouseOver($event)">
+        <!-- 标题 -->
         <div class='node-content' v-if="node.isRoot==true" draggable="false">
             <div class="node-title">
                 <div contenteditable v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)'>
@@ -167,7 +167,7 @@
 </template>
 <script src="./static/vue.js"></script>
 <script>
-    var getCaretPosition = function(oField) {
+    var getCaretPosition = function (oField) {
         var iCaretPos = 0;
         var doc = oField.ownerDocument || oField.document;
         var win = doc.defaultView || doc.parentWindow;
@@ -203,23 +203,23 @@
     const MOUSE_L_KEY_UP = 10 //鼠标左键弹起
 
     window.mouse_state = NOTHING
-    window.mouse_Y = 0
+    //window.mouse_Y = 0
     window.mouse_dir = 0 //1 上，-1下，0无方向
     window.mouse_start = '' //记录起始节点
     window.mouse_pre = '' //上个经过的节点
     window.mouse_pre_Y = 0 //上次经过节点时的Y坐标
 
     window.pre_action = {
-            actionNode: "",
-            action: NOTHING,
-            other: ''
-        } //状态保存
+        actionNode: "",
+        action: NOTHING,
+        other: ''
+    } //状态保存
     window.shift_arrow_count = 0
     window.select_node = []
     window.arrow_up_down = 0 //1 上，-1下，0无方向
     window.pos_node = '' //定位节点
     var TreeNode = Vue.extend({
-        data: function() {
+        data: function () {
             return {
                 show_oprators: false,
                 is_draged: false,
@@ -230,31 +230,30 @@
         props: ['node'],
         template: '#tree-node-tpl',
         methods: {
-            handleMouseUp: function(e) {
-                console.log("鼠标弹起", "弹起键：", e.button, "节点:", this.node.name)
+            handleMouseUp: function (e) {
+                console.log("鼠标弹起", "弹起键：", e.button, "当前节点:", this.node.name)
                 console.log("鼠标弹起", "选择数组长度", window.select_node.length)
+                //console.log("鼠标弹起", "选择数组 1 内容：", window.select_node[0].node.name)
                 window.mouse_state = NOTHING //什么键都没有
-                window.mouse_Y = 0
                 window.mouse_pre_Y = 0
                 window.mouse_dir = 0
                 window.mouse_start = ''
                 window.mouse_pre = ''
             },
-            handleMouseOver: function(e) {
+            handleMouseOver: function (e) {
                 if (window.mouse_state == MOUSE_L_KEY_DOWN) { //当前是按着左键的移动
-                    console.log("鼠标经过", "经过节点:", this.node.name, "鼠标事件:", e.screenY, "鼠标标志：", window.mouse_state)
-
-                    if (window.mouse_start == this) { //回到起始节点，方向清零
+                    //console.log("鼠标经过", "经过节点:", this.node.name, "鼠标事件:", e.screenY, "鼠标标志：", window.mouse_state,"鼠标移动方向",window.mouse_dir)
+                    if (window.mouse_start == this && window.mouse_dir != 0) { //回到起始节点，方向清零
                         console.log("鼠标经过", "回到起始节点", this.node.name)
-                        window.mouse_Y = e.screenY
+                        this.clear_select_node()
                         window.mouse_pre_Y = e.screenY
                         window.mouse_pre = this
                         window.mouse_dir = 0
                         return
                     }
 
-                    if (window.mouse_dir == 0) { //判断目前鼠标的移动方向
-                        var ddd = e.screenY - window.mouse_Y
+                    if (window.mouse_dir == 0) { //判断鼠标的移动方向
+                        var ddd = e.screenY - window.mouse_pre_Y
                         if (ddd > 0) { //向下
                             console.log("鼠标经过", "方向:下")
                             window.mouse_dir = -1
@@ -267,40 +266,106 @@
                     if (window.mouse_pre != this) { //上次事件触发和本次事件触发不是同一个节点
                         //判断当前鼠标移动趋势
                         var ddd = (e.screenY - window.mouse_pre_Y) > 0 ? -1 : 1 //大于0 向下，小于0 向上
-
-                        if (ddd == window.mouse_dir) { //如果鼠标移动大趋势（window.mouse_dir），和当前趋势一致，增加选中节点
-                            //已经添加，不添加
-                            //如果当前节点是父元在添加列表，不添加
-                            //如果是向上，添加到前端
-                            //
-                            //如果是向下，添加到末端
-                        } else { //如果鼠标移动大趋势和当前趋势不一致，减少选中节点
-
+                        console.log("鼠标经过", "当前移动方向", ddd, "初始移动方向", window.mouse_dir, '当前节点', this.node.name)
+                        //选择方向向上  //当前方向向上
+                        //选择方向向下，当前方向向上
+                        //===================================================================================================================
+                        if (ddd == 1) { //当前方向向上
+                            if (window.select_node.length == 0) { //选择节点数组为空
+                                //window.arrow_up_down = 1 //方向向上
+                                this.$el.classList.add('select_style')
+                                window.select_node.unshift(this) //加入节点
+                            } else if (this == window.select_node[0] && this.$el.classList[this.$el.classList.length - 1] !== "select_style") {
+                                console.log("当前节点在选择数组中", "没有显示选中状态", "设置选中状态")
+                                //window.arrow_up_down = 1
+                                window.select_node[0].$el.classList.add("select_style")
+                            } else { //选择节点数组不空
+                                if (window.mouse_dir == 1) { //选择方向向上  当前方向向上，增加内容
+                                    var p_node = window.select_node[0].$parent
+                                    var index = p_node.node.children.indexOf(window.select_node[0].node)
+                                    if (index > 0) { //有兄节点
+                                        this.add_selection_node(p_node.$children[index - 1], -1)
+                                        p_node.$children[index - 1].$el.classList.add('select_style')
+                                    } else { //无兄节点  获得祖辈节点
+                                        if (p_node.node.isRoot != true) { //父节点非根节点
+                                            this.clear_select_node_style() //先是选中元素取消选中模式
+                                            window.select_node.splice(0, window.select_node.length)
+                                            this.add_selection_node(p_node, -1)
+                                            //window.select_node.unshift(p_node)
+                                            //p_node.$el.style.backgroundColor='grey'
+                                            p_node.$el.classList.add('select_style')
+                                        }
+                                    }
+                                } else if (window.mouse_dir == -1) { //选择方向向下  按键向上，删除内容
+                                    var dd = window.select_node.pop() //弹出最后一个元素
+                                    dd.$el.classList.remove('select_style') //删除选中样式
+                                }
+                            }
                         }
 
+                        //选择方向向上 ，当前方向向下
+                        //选择方向向下，当前方向向上
+                        //==================================================================================================================
+                        if (ddd == -1) { //当前方向向下
+                            if (window.select_node.length == 0) { //选择节点数组为空
+                                //window.arrow_up_down = -1 //方向向下
+                                this.$el.classList.add('select_style')
+                                window.select_node.push(this) //加入节点
+                            } //选择节点数组为空
+                            else if (this == window.select_node[0] && this.$el.classList[this.$el.classList.length - 1] !== "select_style") {
+                                console.log("当前节点在选择数组中", "没有显示选中状态", "设置选中状态")
+                                //window.arrow_up_down = -1
+                                window.select_node[0].$el.classList.add("select_style")
+                            } else { //选择节点数组不为空
+                                if (window.mouse_dir == -1) { //选择方向向下
+                                    //选择节点数组最末节点 的子节点
+                                    var p_node = window.select_node[window.select_node.length - 1].$parent
+                                    var index = p_node.node.children.indexOf(window.select_node[window.select_node.length - 1].node)
+                                    if (index < p_node.node.children.length - 1) { //有弟节点
+                                        console.log("shift+向下箭头", "//有弟节点")
+                                        p_node.$children[index + 1].$el.classList.add('select_style')
+                                        this.add_selection_node(p_node.$children[index + 1], 1)
+                                        //window.select_node.push(p_node.$children[index + 1])
+                                    } else { //选择节点数组最末节点的父节点的弟节点
+                                        var ddd = this.getParent(p_node)
+                                        if (ddd != undefined && ddd.node.isRoot != true) {
+                                            ddd.$el.classList.add('select_style')
+                                            this.add_selection_node(ddd, 1)
+                                            //window.select_node.push(ddd)
+                                        }
+                                    }
+                                } //选择方向向下
+                                else if (window.mouse_dir == 1) { //选择方向向上  按键向下
+                                    var dd = window.select_node.shift() //弹出最后一个元素
+
+                                    dd.$el.classList.remove('select_style') //删除选中样式
+                                    for (var i = 0; i < dd.$children.length; i++) {
+                                        window.select_node.push(dd.$children[i])
+                                        dd.$children[i].$el.classList.add('select_style')
+                                    }
+                                } //选择方向向上
+                            } //选择节点数组不为空
+                        }
+                        //================================================
                     }
-
-
                 }
+                window.mouse_pre_Y = e.screenY
+                window.mouse_pre = this
             },
-            handleMouseDown: function(e) {
-                var button = e.button
+            handleMouseDown: function (e) {
                 console.log("鼠标按下", "按下键：", button, "鼠标事件：", e.screenY)
+                var button = e.button
                 if (button == 0) {
                     window.mouse_state = MOUSE_L_KEY_DOWN //按下了鼠标左键
-                    window.mouse_Y = e.screenY
+                    //window.mouse_Y = e.screenY
                     window.mouse_pre_Y = e.screenY
                     window.mouse_start = this
                     window.mouse_pre = this
                 }
-                //console.log("鼠标按下", "选中节点长度：", window.select_node.length)
-                /*for (var i = 0; i < window.select_node.length; i++) {
-                    window.select_node[i].$el.classList.add('drag_targ')
-                }*/
                 window.pre_action.actionNode = this
                 window.pre_action.action = MOUSE_L_KEY_DOWN
             },
-            handeClick: function(e) {
+            handeClick: function (e) {
                 console.log("鼠标点击")
                 var show_or_not = this.$el.childNodes[0].childNodes[0]
                 if (this.node.children.length > 0) {
@@ -315,16 +380,16 @@
                     this.$el.childNodes[2].style.display = 'none'
                 }
                 this.clear_select_node()
-                    /*this.$el.style.backgroundColor='grey'*/
+                /*this.$el.style.backgroundColor='grey'*/
             },
-            handleFocus: function(e) {
+            handleFocus: function (e) {
                 console.log("获得焦点：", this.node.name, "选择数组长度：", window.select_node.length)
                 this.clear_select_node()
                 this.set_Pre_action(this, FOCUS)
                 this.add_selection_node(this, -1) ////将自己加入选区,1 后面加，-1 前面加
                 console.log("添加节点：", this.node.name, "选择数组长度：", window.select_node.length)
             },
-            handleBlur: function(e) {
+            handleBlur: function (e) {
                 console.log("失去焦点节点：", this.node.name)
                 if (window.pre_action.action != MOUSE_L_KEY_DOWN) {
                     this.clear_select_node()
@@ -334,12 +399,12 @@
                 }
                 this.set_Pre_action(this, BLUR)
             },
-            handleInput: function(e) {
+            handleInput: function (e) {
                 /*var re=/(^\s*)|(\s*$)/g*/
                 var newstring = e.target.innerText
                 this.node.name = newstring.trim()
             },
-            handleDrop: function(e) {
+            handleDrop: function (e) {
                 window.pos_node = this //拖动定位
                 if (window.select_node.length > 0) { //可能有多个
                     for (i = 0; i < window.select_node.length; i++) {
@@ -351,7 +416,7 @@
                 this.handleDrop_fun(e, this, window.__drop_node__, 0, 1)
                 this.clear_select_node()
             },
-            handleDrop_fun: function(e, el_node, vm, mult, up_or_down) { //事件,定位节点，被移动节点，移动节点序号,目标节点的上方还是下方（1下，-1上
+            handleDrop_fun: function (e, el_node, vm, mult, up_or_down) { //事件,定位节点，被移动节点，移动节点序号,目标节点的上方还是下方（1下，-1上
                 el_node.$el.children[0].classList.remove('drag_targ')
                 vm.$el.children[0].classList.remove('drag_targ')
 
@@ -364,7 +429,7 @@
                 }
                 var current_node = vm.node;
                 var current_el = ''
-                vm.$parent.node.children = vm.$parent.node.children.filter(function(node) {
+                vm.$parent.node.children = vm.$parent.node.children.filter(function (node) {
                     return node !== current_node
                 })
                 if (up_or_down == 1) {
@@ -378,50 +443,50 @@
                 }
                 return current_el
             },
-            handleDragEnd: function(e) {
+            handleDragEnd: function (e) {
                 //this.$el.style.backgroundColor = ''
                 this.$el.children[0].classList.remove('drag_src')
                 this.$el.children[0].classList.remove('drag_targ')
                 this.is_draged = false
             },
-            handleDragStart: function(e) {
+            handleDragStart: function (e) {
                 console.log("拖动开始事件", "节点是：", this)
                 this.show = false
                 this.is_draged = true
                 window.__drop_node__ = this
-                    //this.$el.style.backgroundColor = 'grey'
+                //this.$el.style.backgroundColor = 'grey'
                 this.$el.children[0].classList.add('drag_src')
             },
-            handleDragEnter: function(e) {
+            handleDragEnter: function (e) {
                 //拖动进入的节点不是被拖动元素，同时被拖动元素不是进入节点的祖辈节点
                 if ((window.__drop_node__ != this) && (!this.is_parent(this))) {
                     //显示可加入提示线
                     this.$el.children[0].classList.add('drag_targ')
                 }
             },
-            handleDragLeave: function(e) {
+            handleDragLeave: function (e) {
                 if (window.__drop_node__ != this) {
                     /*if(!this.is_draged) this.$el.style.backgroundColor = "";*/
                     this.$el.children[0].classList.remove('drag_targ')
                 }
             },
-            handleDragOver: function(e) {
+            handleDragOver: function (e) {
                 //拖动进入的节点不是被拖动元素，同时被拖动元素不是进入节点的祖辈节点
                 //显示可加入提示线
                 if ((window.__drop_node__ != this) && (!this.is_parent(this))) {
                     this.$el.children[0].classList.add('drag_targ')
                 }
             },
-            showOprators: function() {
+            showOprators: function () {
                 this.show_oprators = true;
             },
-            hideOprators: function() {
+            hideOprators: function () {
                 this.show_oprators = false;
             },
-            toggle: function() {
+            toggle: function () {
                 this.readonly_op = false;
             },
-            addNode: function() { //节点下发加入节点
+            addNode: function () { //节点下发加入节点
                 var newnode = {
                     name: '1',
                     children: []
@@ -431,18 +496,18 @@
                 if (this.node.children.length > 0 || this.node.isRoot) { //是标题元素，或者当前节点有子节点，新增添加当前节点的子节点
 
                     this.node.children.unshift(added_node)
-                    this.$nextTick(function() {
+                    this.$nextTick(function () {
                         this.$children[0].$el.getElementsByClassName("myinput")[0].focus()
                     })
                     return
                 }
                 var index = this.$parent.node.children.indexOf(this.node) + 1
                 this.$parent.node.children.splice(index, 0, added_node);
-                this.$nextTick(function() {
+                this.$nextTick(function () {
                     this.$parent.$children[index].$el.getElementsByClassName("myinput")[0].focus()
                 })
             },
-            addNodeUp: function() { //节点上方加入节点
+            addNodeUp: function () { //节点上方加入节点
                 //确定本节点不是title节点
                 var index = this.$parent.node.children.indexOf(this.node)
                 console.log(this.node.name)
@@ -450,13 +515,13 @@
                     name: 'up',
                     children: []
                 })
-                this.$nextTick(function() { //当前节点获得焦点
-                        this.setfocus(this.$parent.$children[index])
-                    })
-                    //找到本节点在父节点children中的位置
-                    //在该位置前插入新节点
+                this.$nextTick(function () { //当前节点获得焦点
+                    this.setfocus(this.$parent.$children[index])
+                })
+                //找到本节点在父节点children中的位置
+                //在该位置前插入新节点
             },
-            addNodeMid: function(pos) { //节点中间加入节点
+            addNodeMid: function (pos) { //节点中间加入节点
                 //获得插入点后面部分内容，作为新节点内容
                 //更新当前节点内容为插入点以前部分的内容
                 //更新焦点到新插入点
@@ -469,47 +534,69 @@
                 }
                 this.addNode(newnode)
             },
-            removeNode: function(t_node) {
+            removeNode: function (t_node) {
                 var current_node = t_node.node;
-                t_node.$parent.node.children = t_node.$parent.node.children.filter(function(node) {
+                t_node.$parent.node.children = t_node.$parent.node.children.filter(function (node) {
                     return node !== current_node;
                 });
             },
 
-            editNode: function() {
+            editNode: function () {
                 var name = prompt("Input the name of new node", this.node.name);
                 if (!!name && !!name.trim()) {
                     this.node.name = name.trim();
                 }
             },
 
-            nodeDown: function() {
+            nodeDown: function () {
                 var index = this.$parent.node.children.indexOf(this.node)
-                    //如果是顶级节点，不会有父节点，indexof函数返回-1
+                //如果是顶级节点，不会有父节点，indexof函数返回-1
                 if (index > 0) { //非根节点
                     var vm = this
                     var current_node = vm.node;
                     //从现有位置删除本节点
-                    vm.$parent.node.children = vm.$parent.node.children.filter(function(node) {
+                    vm.$parent.node.children = vm.$parent.node.children.filter(function (node) {
                         return node !== current_node;
                     });
                     //在当前节点的 兄节点的 子节点的最后 加入当前节点
                     this.$parent.node.children[index - 1].children.push(current_node);
-                    this.$nextTick(function() { //当前节点获得焦点
+                    this.$nextTick(function () { //当前节点获得焦点
                         var newindex = this.$parent.$children[index - 1].$children.length
                         this.setfocus(this.$parent.$children[index - 1].$children[newindex - 1])
-                            //this.$parent.$children[index-1].$children[newindex-1].$el.getElementsByClassName("myinput")[0].focus()
+                        //this.$parent.$children[index-1].$children[newindex-1].$el.getElementsByClassName("myinput")[0].focus()
                     })
                 }
             },
 
-            setfocus: function(yuanshu) {
+            setfocus: function (yuanshu) {
                 yuanshu.$el.getElementsByClassName("myinput")[0].focus()
             },
 
+            getParent: function (p_node) { //为了能回溯父节点
+                if (p_node.node == undefined) {
+                    return ddd
+                }
+                var ddd = undefined
+                var pp_node = p_node.$parent //父节点
+                var pp_index = pp_node.node.children.indexOf(p_node.node)
+                if (pp_index < pp_node.node.children.length - 1) { //父节点有弟节点
+                    ddd = pp_node.$children[pp_index + 1]
+                    return ddd
+                }
+                return this.getParent(pp_node)
+            },
 
-            handleKeyDown: function(e) {
-                //辅助函数======================
+            getLastChildren: function (s_node) { //获得最后有一个子节点
+                if (s_node.node.children.length == 0) { //没有子节点
+                    return s_node
+                } else { //有子节点
+                    return this.getLastChildren(s_node.$children[s_node.node.children.length - 1])
+                }
+            },
+
+
+            handleKeyDown: function (e) {
+              /*  //辅助函数======================
                 function getParent(p_node) { //为了能回溯父节点
                     if (p_node.node == undefined) {
                         return ddd
@@ -531,7 +618,7 @@
                         return getLastChildren(s_node.$children[s_node.node.children.length - 1])
                     }
                 }
-                //=======================================
+                //=======================================*/
                 //按键多的先拦截。
                 if (e.keyCode == 17 || e.keyCode == 16) {
                     return
@@ -559,7 +646,7 @@
                                 focus_node_index = this.handleDrop_fun(e, p_node, window.select_node[i], i, 1)
                             }
                         }
-                        this.$nextTick(function() {
+                        this.$nextTick(function () {
                             index = focus_node.$parent.node.children.indexOf(focus_node.node)
                             console.log("shift+ctrl+向下箭头", "定位节点中的位置：", focus_node_index, "焦点定位节点：", focus_node)
                             console.log("shift+ctrl+向下箭头", "定位节点位置确定", index, "定位节点父节点的子元素个数", focus_node.$parent.$children.length)
@@ -601,9 +688,9 @@
                         }
 
                         console.log("shift+ctrl+向上箭头", "设置焦点节点：", focus_node.node.name)
-                            //this.setfocus(focus_node)
-                            //this.clear_select_node()
-                        this.$nextTick(function() {
+                        //this.setfocus(focus_node)
+                        //this.clear_select_node()
+                        this.$nextTick(function () {
                             index = focus_node.$parent.node.children.indexOf(focus_node.node)
                             console.log("shift+ctrl+向下箭头", "定位节点中的位置：", focus_node_index, "焦点定位节点：", focus_node)
                             console.log("shift+ctrl+向下箭头", "定位节点位置确定", index, "定位节点父节点的子元素个数", focus_node.$parent.$children.length)
@@ -632,7 +719,7 @@
                                 console.log("shift+上箭头", "有兄节点", "父节点中的索引位置", index)
                                 this.add_selection_node(p_node.$children[index - 1], -1)
                                 p_node.$children[index - 1].$el.classList.add('select_style')
-                                    //p_node.$children[index-1].$el.style.backgroundColor='grey'
+                                //p_node.$children[index-1].$el.style.backgroundColor='grey'
                             } else { //无兄节点  获得祖辈节点
                                 console.log("shift+上箭头", "无兄节点")
                                 console.log("p_node.node.isRoot=", p_node.node.isRoot)
@@ -640,8 +727,8 @@
                                     this.clear_select_node_style() //先是选中元素取消选中模式
                                     window.select_node.splice(0, window.select_node.length)
                                     this.add_selection_node(p_node, -1)
-                                        //window.select_node.unshift(p_node)
-                                        //p_node.$el.style.backgroundColor='grey'
+                                    //window.select_node.unshift(p_node)
+                                    //p_node.$el.style.backgroundColor='grey'
                                     p_node.$el.classList.add('select_style')
                                 }
                             }
@@ -666,20 +753,20 @@
                     } else { //选择节点数组不为空
                         if (window.arrow_up_down == -1) { //选择方向向下
                             console.log("shift+向下箭头", "//选择方向向下")
-                                //选择节点数组最末节点 的子节点
+                            //选择节点数组最末节点 的子节点
                             var p_node = window.select_node[window.select_node.length - 1].$parent
                             var index = p_node.node.children.indexOf(window.select_node[window.select_node.length - 1].node)
                             if (index < p_node.node.children.length - 1) { //有弟节点
                                 console.log("shift+向下箭头", "//有弟节点")
                                 p_node.$children[index + 1].$el.classList.add('select_style')
                                 this.add_selection_node(p_node.$children[index + 1], 1)
-                                    //window.select_node.push(p_node.$children[index + 1])
+                                //window.select_node.push(p_node.$children[index + 1])
                             } else { //选择节点数组最末节点的父节点的弟节点
-                                var ddd = getParent(p_node)
+                                var ddd = this.getParent(p_node)
                                 if (ddd != undefined && ddd.node.isRoot != true) {
                                     ddd.$el.classList.add('select_style')
                                     this.add_selection_node(ddd, 1)
-                                        //window.select_node.push(ddd)
+                                    //window.select_node.push(ddd)
                                 }
                             }
                         } //选择方向向下
@@ -687,8 +774,8 @@
                             var dd = window.select_node.shift() //弹出最后一个元素
                             console.log("shift+向下箭头", '选择方向向上', "目前选择节点数：", window.select_node.length)
                             dd.$el.classList.remove('select_style') //删除选中样式
-                                //if (window.select_node.length = 0) { //弹出节点是选择节点的最后一个节点
-                                //弹出节点是否有子节点，若有选中所有子节点
+                            //if (window.select_node.length = 0) { //弹出节点是选择节点的最后一个节点
+                            //弹出节点是否有子节点，若有选中所有子节点
                             for (var i = 0; i < dd.$children.length; i++) {
                                 window.select_node.push(dd.$children[i])
                                 dd.$children[i].$el.classList.add('select_style')
@@ -715,8 +802,8 @@
                     }
                     this.clear_select_node()
                     var t_node = ''
-                        //var pos = getCaretPosition(this.$el)
-                        //if (pos == 1 && (this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
+                    //var pos = getCaretPosition(this.$el)
+                    //if (pos == 1 && (this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
                     if ((this.node.name.length == 0) && this.node.children.length == 0) { //在头部Backspace
                         //找到光标停留的节点，先是兄节点、在是父节点，一直向上
                         var index = this.$parent.node.children.indexOf(this.node)
@@ -750,12 +837,12 @@
                         var vm = this
                         var current_node = vm.node
                         var index = p2.node.children.indexOf(p1.node)
-                            //从现有位置删除本节点
-                        p1.node.children = p1.node.children.filter(function(node) {
+                        //从现有位置删除本节点
+                        p1.node.children = p1.node.children.filter(function (node) {
                             return node !== current_node;
                         });
                         p2.node.children.splice(index + 1, 0, current_node)
-                        this.$nextTick(function() { //当前节点获得焦点
+                        this.$nextTick(function () { //当前节点获得焦点
 
                             this.setfocus(this.$parent.$parent.$children[index + 1])
                         })
@@ -811,8 +898,8 @@
                     //获得当前节点的在父节点中的位置
                     var index = this.$parent.node.children.indexOf(this.node)
                     var docNode = this.$parent
-                        //如果存在兄弟节点，递归查询兄弟节点最后一个子节点获得焦点
-                        //如果不存在兄弟节点，则父节点获得焦点
+                    //如果存在兄弟节点，递归查询兄弟节点最后一个子节点获得焦点
+                    //如果不存在兄弟节点，则父节点获得焦点
                     if (index > 0) {
                         docNode = fup(this.$parent.$children[index - 1])
                     }
@@ -822,10 +909,10 @@
                 if (e.keyCode == 40) { //Down
                     var index = this.$parent.node.children.indexOf(this.node)
                     var array_length = this.$parent.node.children.length - 1
-                        //以下三个顺序不能乱。
-                        //如果自己有子元素，折到自己子元素第一个
-                        //如果自己有弟节点则到弟节点
-                        //如果自己的父元素有弟节点，折到该元素
+                    //以下三个顺序不能乱。
+                    //如果自己有子元素，折到自己子元素第一个
+                    //如果自己有弟节点则到弟节点
+                    //如果自己的父元素有弟节点，折到该元素
                     if (this.node.children.length > 0) {
                         this.setfocus(this.$children[0])
                         return
@@ -835,17 +922,17 @@
             },
             ////////////////////////////////////////////////////////
 
-            set_Pre_action: function(s_node, action) {
+            set_Pre_action: function (s_node, action) {
                 window.pre_action.actionNode = s_node
                 window.pre_action.action = action
             },
-            remove_selection_node: function(s_node) {
+            remove_selection_node: function (s_node) {
                 var current_node = s_node
-                window.select_node = window.select_node.filter(function(node) {
+                window.select_node = window.select_node.filter(function (node) {
                     return node !== current_node;
                 });
             },
-            add_selection_node: function(s_node, direction) { //direction :1  数组后面加，-1 数据前面加
+            add_selection_node: function (s_node, direction) { //direction :1  数组后面加，-1 数据前面加
                 var index = window.select_node.indexOf(s_node)
                 if (index < 0) {
                     if (direction == -1) {
@@ -855,10 +942,10 @@
                     }
                 }
             },
-            setCaret: function(s_node) {
+            setCaret: function (s_node) {
                 var mymy = s_node.$el.childNodes[0].childNodes[2].childNodes[0]
                 range = document.createRange()
-                    //range.selectNodeContents(mymy)
+                //range.selectNodeContents(mymy)
                 range.selectNode(mymy)
                 range.collapse(true)
                 range.setStart(mymy, mymy.childNodes.length)
@@ -868,7 +955,7 @@
                 sel.removeAllRanges()
                 sel.addRange(range)
             },
-            setCaretPro: function(s_node, start, end) {
+            setCaretPro: function (s_node, start, end) {
                 range = document.createRange()
                 range.selectNode(s_node)
                 range.collapse(true)
@@ -879,18 +966,18 @@
                 sel.addRange(range)
             },
 
-            clear_select_node: function() {
+            clear_select_node: function () {
                 window.shift_arrow_count = 0
                 this.clear_select_node_style()
                 window.select_node.splice(0, window.select_node.length)
             },
-            clear_select_node_style: function() {
+            clear_select_node_style: function () {
                 for (i = 0; i < window.select_node.length; i++) {
                     //window.select_node[i].$el.style.backgroundColor=''
                     window.select_node[i].$el.classList.remove('select_style')
                 }
             },
-            is_parent: function(snode) {
+            is_parent: function (snode) {
                 function getparent(snode) {
                     /*console.log(snode.node.name)*/
                     parentnode.push(snode.node)
@@ -966,7 +1053,7 @@
             title: '我的幕布'
         },
         computed: {
-            tree_json: function() {
+            tree_json: function () {
                 return JSON.stringify(this.rootNode);
             }
         },
