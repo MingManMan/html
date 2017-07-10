@@ -137,9 +137,10 @@
 </body>
 <template id="tree-node-tpl">
     <div class="tree-line" draggable="true" @dragstart.stop="handleDragStart($event)" @drop.stop="handleDrop($event)" @dragenter.stop="handleDragEnter($event)"
-        @dragleave="handleDragLeave($event)" @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)">
-        <!-- 标题 -->
-        <div class='node-content' v-if="node.isRoot==true">
+        @dragleave="handleDragLeave($event)" @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)" @mousedown.stop="handleMouseDown($event)"
+        @mouseup.stop="handleMouseUp($event)" @mouseover.stop="handleMouseOver($event)">
+            <!-- 标题 -->
+        <div class='node-content' v-if="node.isRoot==true" draggable="false">
             <div class="node-title">
                 <div contenteditable v-model="node.name" class='myinput_title' @keydown.stop='handleKeyDown($event)'>
                     {{ node.name}}</div>
@@ -198,6 +199,16 @@
     const SHIFT_UP_ARROW = 6
     const SHIFT_DOWN_ARROW = 7
     const BACKSPACE = 8
+    const MOUSE_L_KEY_DOWN = 9 //鼠标左键按下
+    const MOUSE_L_KEY_UP = 10 //鼠标左键弹起
+
+    window.mouse_state = NOTHING
+    window.mouse_Y = 0
+    window.mouse_dir = 0 //1 上，-1下，0无方向
+    window.mouse_start = '' //记录起始节点
+    window.mouse_pre = '' //上个经过的节点
+    window.mouse_pre_Y = 0 //上次经过节点时的Y坐标
+
     window.pre_action = {
             actionNode: "",
             action: NOTHING,
@@ -219,8 +230,78 @@
         props: ['node'],
         template: '#tree-node-tpl',
         methods: {
+            handleMouseUp: function(e) {
+                console.log("鼠标弹起", "弹起键：", e.button, "节点:", this.node.name)
+                console.log("鼠标弹起", "选择数组长度", window.select_node.length)
+                window.mouse_state = NOTHING //什么键都没有
+                window.mouse_Y = 0
+                window.mouse_pre_Y = 0
+                window.mouse_dir = 0
+                window.mouse_start = ''
+                window.mouse_pre = ''
+            },
+            handleMouseOver: function(e) {
+                if (window.mouse_state == MOUSE_L_KEY_DOWN) { //当前是按着左键的移动
+                    console.log("鼠标经过", "经过节点:", this.node.name, "鼠标事件:", e.screenY, "鼠标标志：", window.mouse_state)
 
+                    if (window.mouse_start == this) { //回到起始节点，方向清零
+                        console.log("鼠标经过", "回到起始节点", this.node.name)
+                        window.mouse_Y = e.screenY
+                        window.mouse_pre_Y = e.screenY
+                        window.mouse_pre = this
+                        window.mouse_dir = 0
+                        return
+                    }
+
+                    if (window.mouse_dir == 0) { //判断目前鼠标的移动方向
+                        var ddd = e.screenY - window.mouse_Y
+                        if (ddd > 0) { //向下
+                            console.log("鼠标经过", "方向:下")
+                            window.mouse_dir = -1
+                        } else if (ddd < 0) { //向上
+                            console.log("鼠标经过", "方向:上")
+                            window.mouse_dir = 1
+                        }
+                    }
+
+                    if (window.mouse_pre != this) { //上次事件触发和本次事件触发不是同一个节点
+                        //判断当前鼠标移动趋势
+                        var ddd = (e.screenY - window.mouse_pre_Y) > 0 ? -1 : 1 //大于0 向下，小于0 向上
+
+                        if (ddd == window.mouse_dir) { //如果鼠标移动大趋势（window.mouse_dir），和当前趋势一致，增加选中节点
+                            //已经添加，不添加
+                            //如果当前节点是父元在添加列表，不添加
+                            //如果是向上，添加到前端
+                            //
+                            //如果是向下，添加到末端
+                        } else { //如果鼠标移动大趋势和当前趋势不一致，减少选中节点
+
+                        }
+
+                    }
+
+
+                }
+            },
+            handleMouseDown: function(e) {
+                var button = e.button
+                console.log("鼠标按下", "按下键：", button, "鼠标事件：", e.screenY)
+                if (button == 0) {
+                    window.mouse_state = MOUSE_L_KEY_DOWN //按下了鼠标左键
+                    window.mouse_Y = e.screenY
+                    window.mouse_pre_Y = e.screenY
+                    window.mouse_start = this
+                    window.mouse_pre = this
+                }
+                //console.log("鼠标按下", "选中节点长度：", window.select_node.length)
+                /*for (var i = 0; i < window.select_node.length; i++) {
+                    window.select_node[i].$el.classList.add('drag_targ')
+                }*/
+                window.pre_action.actionNode = this
+                window.pre_action.action = MOUSE_L_KEY_DOWN
+            },
             handeClick: function(e) {
+                console.log("鼠标点击")
                 var show_or_not = this.$el.childNodes[0].childNodes[0]
                 if (this.node.children.length > 0) {
                     show_or_not.innerText == "-" ? show_or_not.innerText = "+" : show_or_not.innerText =
@@ -242,16 +323,16 @@
                 this.set_Pre_action(this, FOCUS)
                 this.add_selection_node(this, -1) ////将自己加入选区,1 后面加，-1 前面加
                 console.log("添加节点：", this.node.name, "选择数组长度：", window.select_node.length)
-
             },
             handleBlur: function(e) {
                 console.log("失去焦点节点：", this.node.name)
-                this.clear_select_node()
+                if (window.pre_action.action != MOUSE_L_KEY_DOWN) {
+                    this.clear_select_node()
+                }
                 if (window.pre_action.actionNode == this && window.pre_action.action == FOCUS) { //前一个动作节点是自己，动作是获得焦点
                     this.remove_selection_node(this)
                 }
                 this.set_Pre_action(this, BLUR)
-
             },
             handleInput: function(e) {
                 /*var re=/(^\s*)|(\s*$)/g*/
@@ -304,7 +385,7 @@
                 this.is_draged = false
             },
             handleDragStart: function(e) {
-                console.log("handleDragStart", "节点是：", this)
+                console.log("拖动开始事件", "节点是：", this)
                 this.show = false
                 this.is_draged = true
                 window.__drop_node__ = this
@@ -539,8 +620,7 @@
                         window.arrow_up_down = 1 //方向向上
                         this.$el.classList.add('select_style')
                         window.select_node.unshift(this) //加入节点
-                    } //选择节点数组为空
-                    else if (this == window.select_node[0] && this.$el.classList[this.$el.classList.length - 1] !== "select_style") {
+                    } else if (this == window.select_node[0] && this.$el.classList[this.$el.classList.length - 1] !== "select_style") {
                         console.log("当前节点在选择数组中", "没有显示选中状态", "设置选中状态")
                         window.arrow_up_down = 1
                         window.select_node[0].$el.classList.add("select_style")
@@ -605,7 +685,17 @@
                         } //选择方向向下
                         else { //选择方向向上  按键向下
                             var dd = window.select_node.shift() //弹出最后一个元素
+                            console.log("shift+向下箭头", '选择方向向上', "目前选择节点数：", window.select_node.length)
                             dd.$el.classList.remove('select_style') //删除选中样式
+                                //if (window.select_node.length = 0) { //弹出节点是选择节点的最后一个节点
+                                //弹出节点是否有子节点，若有选中所有子节点
+                            for (var i = 0; i < dd.$children.length; i++) {
+                                window.select_node.push(dd.$children[i])
+                                dd.$children[i].$el.classList.add('select_style')
+                            }
+
+                            //}
+
                         } //选择方向向上
                     } //选择节点数组不为空
                     return
