@@ -137,7 +137,7 @@
 </body>
 <template id="tree-node-tpl">
     <div class="tree-line" draggable="false" @dragstart.stop="handleDragStart($event)" @drop.stop="handleDrop($event)" @dragenter.stop="handleDragEnter($event)" @dragleave="handleDragLeave($event)"
-        @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)">
+        @dragend.prevent.stop="handleDragEnd($event)" @dragover.stop.prevent="handleDragOver($event)" >
         <!-- 标题 -->
         <div class='node-content' v-if="node.isRoot==true" draggable="false">
             <div class="node-title">
@@ -150,7 +150,7 @@
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-if="node.children.length>0">-</div>
             <div class="kaitou_jia" @click.stop="handeClick($event)" v-else>o</div>
             <div class="zhongjian">
-                <div contenteditable v-model="node.name" class='myinput' v-text="node.name" @input="handleInput($event)" @keydown.stop='handleKeyDown($event)' @focus='handleFocus($event)'
+                <div contenteditable v-model="node.name" class='myinput' v-text="node.name" @input="handleInput($event)"  @focus='handleFocus($event)' @keydown.stop='handleKeyDown($event)'
                     @blur='handleBlur($event)' @mousedown.stop="handleMouseDown($event)" @mouseup.stop="handleMouseUp($event)" @mouseover.prevent.stop="handleMouseOver($event)">
                 </div>
             </div>
@@ -202,6 +202,8 @@
     const MOUSE_L_KEY_DOWN = 9 //鼠标左键按下
     const MOUSE_L_KEY_UP = 10 //鼠标左键弹起
     const MOUSE_MOVE_OVER = 11 //鼠标经过
+    const TAB = 12 //按下TAB键
+    const SHIFT_TAB = 13 //按下shift+TAB
     window.mouse_state = NOTHING
         //window.mouse_Y = 0
     window.mouse_dir = 0 //1 上，-1下，0无方向
@@ -412,14 +414,16 @@
             },
             handleFocus: function(e) {
                 console.log("获得焦点 ", this.node.name, "选择数组长度：", window.select_node.length)
-                this.clear_select_node()
-                this.set_Pre_action(this, FOCUS, "")
+                if (window.pre_action.action != MOUSE_L_KEY_DOWN && window.pre_action.action != TAB && window.pre_action.action != SHIFT_TAB && window.pre_action.action != BLUR) {
+                    this.clear_select_node()
+                }
                 this.add_selection_node(this, -1) ////将自己加入选区,1 后面加，-1 前面加
+                this.set_Pre_action(this, FOCUS, "")
                 console.log("获得焦点 添加节点：", this.node.name, "选择数组长度：", window.select_node.length)
             },
             handleBlur: function(e) {
                 console.log("失去焦点 ", "节点：", this.node.name)
-                if (window.pre_action.action != MOUSE_L_KEY_DOWN) {
+                if (window.pre_action.action != MOUSE_L_KEY_DOWN && window.pre_action.action != TAB && window.pre_action.action != SHIFT_TAB) {
                     this.clear_select_node()
                 }
                 if (window.pre_action.actionNode == this && window.pre_action.action == FOCUS) { //前一个动作节点是自己，动作是获得焦点
@@ -613,6 +617,10 @@
                     //在当前节点的 兄节点的 子节点的最后 加入当前节点
                     new_node.index = s_node.$parent.node.children[index - 1].children.push(current_node) - 1
                     new_node.s_node = s_node.$parent.$children[index - 1].$children
+                    return new_node
+                } else if (index == 0) {
+                    new_node.index = 0
+                    new_node.s_node = s_node.$parent.$children
                     return new_node
                 }
             },
@@ -865,6 +873,8 @@
                             this.handleDrop_fun(e, p_node, window.select_node[i], 0, 1)
                         }
                     }
+
+                    this.set_Pre_action(this, SHIFT_TAB, "")
                     return
                 }
 
@@ -880,11 +890,16 @@
                     this.clear_select_node()
                     this.$nextTick(function() { //当前节点获得焦点
                             for (var i = 0; i < new_node.length; i++) {
-                                new_node[i].s_node[new_node[i].index].$el.classList.add('select_style')
-                                window.select_node.push(new_node[i].s_node[new_node[i].index])
+                                var tmp_node = new_node[i].s_node[new_node[i].index]
+                                console.log("----键盘按下 tab $nextTick函数  添加选择节点：", tmp_node)
+                                tmp_node.$el.classList.add('select_style')
+                                window.select_node.push(tmp_node)
+
                             }
+                            this.setfocus(window.select_node[0])
                         })
                         //this.nodeDown()
+                    this.set_Pre_action(this, TAB, "")
                     return
                 }
 
